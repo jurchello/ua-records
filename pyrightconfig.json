@@ -1,0 +1,25 @@
+{
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.10",
+
+  "reportMissingTypeStubs": "warning",
+  "reportUnknownMemberType": "warning",
+  "reportUnknownArgumentType": "warning",
+  "reportUnknownVariableType": "warning",
+  "reportMissingModuleSource": "none",
+
+  "stubPath": "stubs",
+
+  "exclude": [
+    "**/__pycache__/**",
+    ".venv/**",
+    "build/**",
+    "dist/**",
+    "logs/**"
+  ],
+
+  "ignore": [
+    "UARecords.gpr.py",
+    "*.gpr.py"
+  ]
+}

@@ -1,0 +1,16 @@
+[MASTER]
+ignore-patterns=UARecords\.gpr\.py,.*\.pyi$
+init-hook = "import sys, pathlib; sys.path.insert(0, str(pathlib.Path().resolve()))"
+ignore-paths=tests
+
+[BASIC]
+module-rgx=(([a-z_][a-z0-9_]*)|UARecords)$
+
+[MESSAGES CONTROL]
+disable=
+    missing-function-docstring,
+    missing-class-docstring,
+    missing-module-docstring
+
+[TYPECHECK]
+generated-members=numpy.*,pytest.*
