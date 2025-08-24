@@ -9,6 +9,7 @@
   "reportMissingModuleSource": "none",
 
   "stubPath": "stubs",
+  "useLibraryCodeForTypes": true,
 
   "exclude": [
     "**/__pycache__/**",
