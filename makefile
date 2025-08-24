@@ -15,6 +15,8 @@ help:
 	@echo "  make clean             - Remove caches (__pycache__, .mypy_cache, .pytest_cache, etc.)"
 	@echo "  make check-all         - Run clean, lint, type, and test"
 	@echo "  make check-all-verbose - Same as check-all but with verbose pylint"
+	@echo "  make predeploy         - Run pre-deployment checks and formatting"
+	@echo "  make predeploy-fix     - Run pre-deployment checks and formatting with auto-fixes"
 
 test:
 	pytest $(TESTS)
@@ -52,3 +54,9 @@ check-all-verbose: clean
 	@echo ">>> LINT";   PYTHONPATH=$$(pwd) pylint --rcfile=.pylintrc $(PKG) $(TESTS) || true
 	@echo ">>> MYPY";   mypy --config-file=mypy.ini .
 	@echo ">>> TESTS";  pytest $(TESTS)
+
+predeploy:
+	scripts/predeploy.sh
+
+predeploy-fix:
+	@FIX=1 $(MAKE) predeploy
