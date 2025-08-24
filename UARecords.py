@@ -24,7 +24,7 @@ class UARecords(Gramplet):
         self.settings_ui = SettingsUI(self.settings_manager)
         super().__init__(gui, nav_group)
         self.model: Gtk.ListStore | None = None
-        self._opts_cache: List[MenuOption] = []       
+        self.opts_cache: List[MenuOption] = []       
 
     def init(self) -> None:
         container = self.gui.get_container_widget()
@@ -49,12 +49,12 @@ class UARecords(Gramplet):
         return vbox
 
     def build_options(self) -> None:
-        self._opts_cache = self.settings_ui.build_options()
-        for opt in self._opts_cache:
+        self.opts_cache = self.settings_ui.build_options()
+        for opt in self.opts_cache:
             self.add_option(opt)
 
     def save_options(self) -> None:
-        opts = self._opts_cache
+        opts = self.opts_cache
         if len(opts) < 10:
             return
 

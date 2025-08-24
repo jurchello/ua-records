@@ -1,7 +1,7 @@
 from __future__ import annotations
 import types
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, cast, Generator
 import sys
 
 import pytest
@@ -35,9 +35,17 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     # gramps.gen.const
     const_mod = types.ModuleType("gramps.gen.const")
     setattr(const_mod, 'USER_DATA', str(tmp_path))
+    def get_translator(*args: Any, **kwargs: Any) -> types.SimpleNamespace:
+        def gettext(s: str) -> str:
+            return s
+        return types.SimpleNamespace(gettext=gettext)
+    
+    def gettext(s: str) -> str:
+        return s
+    
     setattr(const_mod, 'GRAMPS_LOCALE', types.SimpleNamespace(
-        get_addon_translator=lambda *_a, **_k: types.SimpleNamespace(gettext=lambda s: s),
-        translation=types.SimpleNamespace(gettext=lambda s: s),
+        get_addon_translator=get_translator,
+        translation=types.SimpleNamespace(gettext=gettext),
     ))
     sys.modules["gramps.gen.const"] = const_mod
 
@@ -67,11 +75,17 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     # gramps.gen.plug._gramplet
     gram_mod = types.ModuleType("gramps.gen.plug._gramplet")
     class _GUIStub:
-        def get_container_widget(self):
+        def get_container_widget(self) -> Any:
+            def get_children() -> list[Any]:
+                return []
+            def remove(child: Any) -> None:
+                pass
+            def add(widget: Any) -> None:
+                pass
             return types.SimpleNamespace(
-                get_children=lambda: [],
-                remove=lambda _c: None,
-                add=lambda _w: None,
+                get_children=get_children,
+                remove=remove,
+                add=add,
             )
     class Gramplet:
         def __init__(self, gui: _GUIStub, _nav: int = 0) -> None:
@@ -86,7 +100,9 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     sys.modules["gramps.gen.plug._gramplet"] = gram_mod
 
     gi_mod = types.ModuleType("gi")
-    setattr(gi_mod, 'require_version', lambda *_a, **_k: None)
+    def require_version(*args: Any, **kwargs: Any) -> None:
+        pass
+    setattr(gi_mod, 'require_version', require_version)
     sys.modules["gi"] = gi_mod
     repo_mod = types.ModuleType("gi.repository")
     sys.modules["gi.repository"] = repo_mod
@@ -132,7 +148,7 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     sys.modules["gi.repository.Gtk"] = cast(Any, gtk_mod)
 
 @pytest.fixture()
-def fake_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+def fake_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[None, Any, None]:
     _install_fake_gramps(monkeypatch, tmp_path)
     # reload our modules after fakes are in place
     for mod_name in [
@@ -145,7 +161,7 @@ def fake_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     yield
 
 # ---------- tests ----------
-def test_config_defaults_and_save(fake_env):
+def test_config_defaults_and_save(fake_env: Any) -> None:
     from settings.settings_manager import SettingsManager
     cfg = SettingsManager()
     assert cfg.get_ai_provider() == "disabled"
@@ -181,7 +197,7 @@ def test_config_defaults_and_save(fake_env):
     assert cfg.get_place_title_length() == 55
     assert cfg.get_citation_text_length() == 60
 
-def test_settings_ui_builds_options(fake_env):
+def test_settings_ui_builds_options(fake_env: Any) -> None:
     from settings.settings_manager import SettingsManager
     from settings.settings_ui import SettingsUI
     cfg = SettingsManager()
@@ -192,24 +208,24 @@ def test_settings_ui_builds_options(fake_env):
     assert opts[3].get_value() == 3
     assert opts[6].get_value() == "compact"
 
-def test_gramplet_save_roundtrip(fake_env):
+def test_gramplet_save_roundtrip(fake_env: Any) -> None:
     import UARecords as fg
     from gramps.gen.plug._gramplet import GUIStub
 
-    g = fg.UARecords(GUIStub())
+    g = fg.UARecords(cast(Any, GUIStub)())
     g.build_options()
-    assert len(g._opts_cache) == 10
+    assert len(g.opts_cache) == 10
 
-    g._opts_cache[0].set_value("openai")
-    g._opts_cache[1].set_value("gpt-4o-mini")
-    g._opts_cache[2].set_value("secret")
-    g._opts_cache[3].set_value(4)
-    g._opts_cache[4].set_value(2)
-    g._opts_cache[5].set_value(5)
-    g._opts_cache[6].set_value("normal")
-    g._opts_cache[7].set_value(42)
-    g._opts_cache[8].set_value(55)
-    g._opts_cache[9].set_value(60)
+    g.opts_cache[0].set_value("openai")
+    g.opts_cache[1].set_value("gpt-4o-mini")
+    g.opts_cache[2].set_value("secret")
+    g.opts_cache[3].set_value(4)
+    g.opts_cache[4].set_value(2)
+    g.opts_cache[5].set_value(5)
+    g.opts_cache[6].set_value("normal")
+    g.opts_cache[7].set_value(42)
+    g.opts_cache[8].set_value(55)
+    g.opts_cache[9].set_value(60)
 
     g.save_options()
 
