@@ -20,7 +20,7 @@ test:
 	pytest $(TESTS)
 
 type:
-	mypy --config-file=mypy.ini .
+	MYPYPATH=/home/yurii/projects/gramps/UARecords/stubs mypy --config-file=mypy.ini .
 
 lint:
 	@files="$$(find $(PKG) $(TESTS) -type f -name '*.py' 2>/dev/null)"; \

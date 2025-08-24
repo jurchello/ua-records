@@ -1,0 +1,3 @@
+class DateError(Exception):
+    def __init__(self, value: str = "") -> None: ...
+    date: object | None

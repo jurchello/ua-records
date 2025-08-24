@@ -1,0 +1,16 @@
+from typing import Any
+
+class BasicPrimaryObject:
+    handle: str
+    gramps_id: str
+    change: int
+    private: bool
+    tag_list: list[str]
+
+    def __init__(self, source: Any | None = ...) -> None: ...
+    def serialize(self) -> tuple[Any, ...]: ...
+    def unserialize(self, data: tuple[Any, ...]) -> None: ...
+
+class PrimaryObject(BasicPrimaryObject):
+    def __init__(self, source: Any | None = ...) -> None: ...
+    def merge(self, acquisition: "PrimaryObject") -> None: ...

@@ -1,10 +1,8 @@
-from typing import Protocol, TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from gi.repository import Gtk
+from typing import Protocol, Any
+from gi.repository import Gtk
 
 class GUIStub(Protocol):
-    def get_container_widget(self) -> "Gtk.Container": ...
+    def get_container_widget(self) -> Gtk.Container: ...
     dbstate: Any
     uistate: Any
     textview: Any
