@@ -4,11 +4,11 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from constants.cache import (
+from uconstants.cache import (
     NAMESPACE_LISTS,
     NAMESPACE_FORMSTATE,
 )
-from constants.paths import USER_DATA_DIRNAME, CACHE_SUBDIR
+from uconstants.paths import USER_DATA_DIRNAME, CACHE_SUBDIR
 
 
 @dataclass(frozen=True)

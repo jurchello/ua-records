@@ -10,7 +10,7 @@ from gi.repository import Gtk
 from gramps.gen.plug._gramplet import Gramplet
 from settings.settings_manager import get_settings_manager, SettingsManager
 from settings.settings_ui import SettingsUI
-
+from ulogging.autoinit import logger
 
 if TYPE_CHECKING:
     from gramps.gen.plug._gramplet import GUIStub
@@ -20,19 +20,33 @@ if TYPE_CHECKING:
 class UARecords(Gramplet):
 
     def __init__(self, gui: "GUIStub", nav_group: int = 0) -> None:
+        logger.channel("success").debug("Starting UARecords gramplet initialization")
         self.settings_manager: SettingsManager = get_settings_manager()
+        logger.channel("success").info("Settings manager initialized successfully")
         self.settings_ui = SettingsUI(self.settings_manager)
         super().__init__(gui, nav_group)
         self.model: Gtk.ListStore | None = None
-        self.opts_cache: List[MenuOption] = []       
+        self.opts_cache: List[MenuOption] = []
+        logger.channel("success").info("UARecords gramplet initialization completed")       
 
     def init(self) -> None:
+        logger.channel("success").debug("Starting gramplet initialization process")
+        logger.channel("success").info("Initializing gramplet GUI")
+        logger.channel("success").warning("This is a test warning message")
         container = self.gui.get_container_widget()
         for child in container.get_children():
             container.remove(child)
         gui = self._build_gui()
         container.add(gui)
         gui.show_all()
+        try:
+            # Simulate a potential error for demonstration
+            test_value = 1 / 0  # This won't actually error, just for demo
+            if test_value == 1:
+                logger.channel("exceptions").error("Demo error: simulated issue in GUI initialization")
+        except Exception as e:
+            logger.channel("exceptions").critical("Critical error during GUI initialization", exc=e)
+        logger.channel("success").info("GUI initialization completed successfully")
 
     def _build_gui(self) -> Gtk.Box:
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

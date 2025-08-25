@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Tuple
 
-from constants.cache import META_SUFFIX, DEFAULT_METADATA, CODEC_JSON
+from uconstants.cache import META_SUFFIX, DEFAULT_METADATA, CODEC_JSON
 
 
 @dataclass

@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 from cache import CacheManager, CacheStatus, CacheKey, key_for_list, key_for_formstate, path_for
-from constants.cache import (
+from uconstants.cache import (
     CODEC_LISTS,
     CODEC_JSON,
     CODEC_FORMSTATE,
