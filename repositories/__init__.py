@@ -6,7 +6,7 @@ from .tag_repository import TagRepository
 from .citation_repository import CitationRepository
 from .place_repository import PlaceRepository
 from .backlink_repository import BacklinkRepository
-from .attribute_repository import AttributeRepository
+from .gramps_attribute_repository import AttributeRepository
 
 __all__ = [
     "BaseRepository",

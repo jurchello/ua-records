@@ -1,6 +1,9 @@
 from typing import Any
+from .refbase import RefBase
+from .datebase import DateBase
+from .secondaryobj import SecondaryObject
 
-class PlaceRef:
+class PlaceRef(RefBase, DateBase, SecondaryObject):
     def __init__(self, source: Any | None = ...) -> None: ...
     def get_citation_child_list(self) -> list[Any]: ...
     def get_handle_referents(self) -> list[Any]: ...
