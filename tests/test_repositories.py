@@ -14,7 +14,7 @@ from repositories.tag_repository import TagRepository
 from repositories.citation_repository import CitationRepository
 from repositories.place_repository import PlaceRepository
 from repositories.backlink_repository import BacklinkRepository
-from repositories.gramps_attribute_repository import AttributeRepository
+from repositories.attribute_repository import AttributeRepository
 
 
 class _HasAttrGetters(Protocol):
@@ -119,15 +119,13 @@ def test_backlink_find_backlinks(db: DbReadBase) -> None:
 
 # ---------- AttributeRepository ----------
 
-def test_attribute_build_with_str(db: DbReadBase) -> None:
+def test_attribute_get_type(db: DbReadBase) -> None:
+    from gramps.gen.lib import Attribute, AttributeType
     repo = AttributeRepository(db)
-    a = repo.build("Occupation", "Farmer")
-    a_typed: _HasAttrGetters = cast(_HasAttrGetters, a)
-    assert a_typed.get_type() == "Occupation"
-    assert a_typed.get_value() == "Farmer"
-
-def test_attribute_build_with_attrtype(db: DbReadBase) -> None:
-    repo = AttributeRepository(db)
-    a = repo.build(cast(AttributeType, AttributeType.OCCUPATION), "Blacksmith")
-    a_typed: _HasAttrGetters = cast(_HasAttrGetters, a)
-    assert a_typed.get_value() == "Blacksmith"
+    
+    attr = Attribute()
+    attr.set_type(AttributeType.OCCUPATION)
+    attr.set_value("Farmer")
+    
+    assert repo.get_type(attr) == AttributeType.OCCUPATION
+    assert repo.get_value(attr) == "Farmer"

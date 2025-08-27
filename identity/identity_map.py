@@ -48,7 +48,11 @@ class IdentityMap:
         return self._store.get(Key(kind, handle))
 
     def attach(self, kind: str, obj: Any) -> str:
-        handle = getattr(obj, "get_handle", None)() if hasattr(obj, "get_handle") else getattr(obj, "handle", None)
+        if hasattr(obj, "get_handle"):
+            handle_method = getattr(obj, "get_handle", None)
+            handle = handle_method() if handle_method is not None else None
+        else:
+            handle = getattr(obj, "handle", None)
         if not isinstance(handle, str) or not handle:
             raise ValueError("object must have handle")
         k = Key(kind, handle)

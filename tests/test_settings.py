@@ -39,10 +39,8 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
         def gettext(s: str) -> str:
             return s
         return types.SimpleNamespace(gettext=gettext)
-    
     def gettext(s: str) -> str:
         return s
-    
     setattr(const_mod, 'GRAMPS_LOCALE', types.SimpleNamespace(
         get_addon_translator=get_translator,
         translation=types.SimpleNamespace(gettext=gettext),
@@ -99,11 +97,13 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     setattr(gram_mod, 'GUIStub', _GUIStub)
     sys.modules["gramps.gen.plug._gramplet"] = gram_mod
 
+    # ---- gi & Gtk/GObject fakes ----
     gi_mod = types.ModuleType("gi")
     def require_version(*args: Any, **kwargs: Any) -> None:
         pass
     setattr(gi_mod, 'require_version', require_version)
     sys.modules["gi"] = gi_mod
+
     repo_mod = types.ModuleType("gi.repository")
     sys.modules["gi.repository"] = repo_mod
 
@@ -115,6 +115,7 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     class _GtkBox:
         def __init__(self, *a: Any, **k: Any) -> None: ...
         def pack_start(self, *_a: Any, **_k: Any) -> None: ...
+        def show_all(self) -> None: ...
     class _GtkListStore:
         def __init__(self, *_t: Any) -> None: ...
     class _GtkTreeView:
@@ -129,10 +130,12 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
         def set_policy(self, *_a: Any, **_k: Any) -> None: ...
         def set_vexpand(self, *_a: Any, **_k: Any) -> None: ...
         def add(self, *_a: Any, **_k: Any) -> None: ...
+
     class _GtkPolicyType:
         AUTOMATIC = 0
     class _GtkOrientation:
         VERTICAL = 1
+
     gtk_mod = types.SimpleNamespace(
         Window=_GtkWindow,
         Box=_GtkBox,
@@ -145,7 +148,18 @@ def _install_fake_gramps(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
         PolicyType=_GtkPolicyType,
         Orientation=_GtkOrientation,
     )
+    # зареєструвати як підмодуль і як атрибут пакета gi.repository
     sys.modules["gi.repository.Gtk"] = cast(Any, gtk_mod)
+    setattr(repo_mod, "Gtk", gtk_mod)
+
+    # --- GObject fake ---
+    gobject_mod = types.SimpleNamespace(
+        TYPE_STRING=object(),
+        TYPE_INT=object(),
+        TYPE_OBJECT=object(),
+    )
+    sys.modules["gi.repository.GObject"] = cast(Any, gobject_mod)
+    setattr(repo_mod, "GObject", gobject_mod)
 
 @pytest.fixture()
 def fake_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[None, Any, None]:
@@ -154,7 +168,7 @@ def fake_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[None,
     for mod_name in [
         "settings.settings_manager",
         "settings.settings_ui",
-        "UARecords", 
+        "UARecords",
     ]:
         if mod_name in sys.modules:
             del sys.modules[mod_name]

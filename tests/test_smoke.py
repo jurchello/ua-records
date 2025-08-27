@@ -13,8 +13,8 @@ def test_formgramplet_build_gui(monkeypatch: MonkeyPatch) -> None:
         # Just create the model like the real method does
         import gi
         gi.require_version("Gtk", "3.0")
-        from gi.repository import Gtk
-        self.model = Gtk.ListStore(str, str)
+        from gi.repository import Gtk, GObject
+        self.model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
         
         class MockBox:
             def show_all(self) -> None: ...

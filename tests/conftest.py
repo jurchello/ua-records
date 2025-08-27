@@ -1,19 +1,11 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, Optional, cast, Literal
+from typing import Any, Dict, Iterable, Iterator, Optional, Literal
 from types import TracebackType
 
 import pytest
-from gramps.gen.db.base import DbReadBase
 from gramps.gen.lib import Person, Event, Family, Tag, Citation, Place
-
-import gramps.gen.db as _dbpkg
-try:
-    from gramps.gen.db.base import DbReadBase as _DbReadBase
-    setattr(_dbpkg, 'DbReadBase', _DbReadBase)
-except Exception:
-    pass
 
 # --- ensure project on sys.path ---
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,8 +84,8 @@ class TinyDb:
 
 # ---------- Fixtures ----------
 @pytest.fixture()
-def db() -> DbReadBase:
-    return cast(DbReadBase, TinyDb())
+def db() -> Any:
+    return TinyDb()
 
 @pytest.fixture(autouse=True)
 def patch_dbtxn(monkeypatch: pytest.MonkeyPatch) -> None:

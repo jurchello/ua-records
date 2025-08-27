@@ -5,7 +5,7 @@ from gramps.gen.lib import Attribute
 from repositories.base_repository import BaseRepository
 
 
-class GrampsAttributeRepository(BaseRepository):
+class AttributeRepository(BaseRepository):
     
     def get_type(self, attribute: Attribute) -> Any:
         return attribute.get_type()

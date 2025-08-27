@@ -5,7 +5,7 @@ import gi
 
 from base_edit_form import BaseEditForm
 gi.require_version("Gtk", "3.0") # pylint: disable=wrong-import-position
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 from gramps.gen.plug._gramplet import Gramplet
 from settings.settings_manager import get_settings_manager, SettingsManager
@@ -50,7 +50,7 @@ class UARecords(Gramplet):
 
     def _build_gui(self) -> Gtk.Box:
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.model = Gtk.ListStore(str, str)
+        self.model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
         view = Gtk.TreeView(model=self.model)
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Список форм", renderer, text=1)
