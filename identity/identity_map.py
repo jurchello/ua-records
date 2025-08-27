@@ -14,6 +14,7 @@ class Serializer(Protocol):
 class CommitAdapter(Protocol):
     def add(self, kind: str, obj: Any) -> str: ...
     def commit(self, kind: str, obj: Any) -> None: ...
+    # remove(...) не обов’язково у протоколі; перевіряємо через getattr під час виконання.
 
 @dataclass
 class Action:
@@ -22,6 +23,12 @@ class Action:
     kwargs: Dict[str, Any]
 
 class IdentityMap:
+    """Unit-of-Work for Gramps objects (H only; VH appear as soon as created).
+
+    - Tracks new/dirty/deleted objects.
+    - Serializes objects to compute diffs and previews.
+    - Commits changes via the supplied adapter.
+    """
     def __init__(self) -> None:
         self._store: Dict[Key, Any] = {}
         self._new: Set[Key] = set()
@@ -48,11 +55,8 @@ class IdentityMap:
         return self._store.get(Key(kind, handle))
 
     def attach(self, kind: str, obj: Any) -> str:
-        if hasattr(obj, "get_handle"):
-            handle_method = getattr(obj, "get_handle", None)
-            handle = handle_method() if handle_method is not None else None
-        else:
-            handle = getattr(obj, "handle", None)
+        handle_method = getattr(obj, "get_handle", None)
+        handle = handle_method() if callable(handle_method) else getattr(obj, "handle", None)
         if not isinstance(handle, str) or not handle:
             raise ValueError("object must have handle")
         k = Key(kind, handle)
@@ -127,22 +131,11 @@ class IdentityMap:
             if obj is not None:
                 adapter.commit(k.kind, obj)
                 self._snapshot(k.kind, k.handle, obj)
+        # handle deletes, if adapter supports remove
+        for k in list(self._deleted):
+            remove = getattr(adapter, "remove", None)
+            if callable(remove):
+                remove(k.kind, k.handle)
         self._new.clear()
         self._dirty.clear()
         self._deleted.clear()
-
-    def __contains__(self, key: Tuple[str, str]) -> bool:
-        kind, handle = key
-        return Key(kind, handle) in self._store
-
-    def __len__(self) -> int:
-        return len(self._store)
-
-    def clear(self) -> None:
-        self._store.clear()
-        self._new.clear()
-        self._dirty.clear()
-        self._deleted.clear()
-        self._actions.clear()
-        self._serializers.clear()
-        self._baseline.clear()

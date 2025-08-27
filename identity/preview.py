@@ -2,6 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
+ID_KEYS: Tuple[str, ...] = ("handle","id","gid")
+
 @dataclass
 class FlatRow:
     section: str          # "new" | "modified" | "deleted"
@@ -19,7 +21,7 @@ def _to_scalar(v: Any) -> str:
         return str(v)
     return str(v)
 
-def _flatten(obj: Any, prefix: str="", id_keys: Tuple[str,...]=("handle","id","gid")) -> Dict[str,str]:
+def _flatten(obj: Any, prefix: str="", id_keys: Tuple[str,...]=ID_KEYS) -> Dict[str,str]:
     out: Dict[str,str] = {}
     if isinstance(obj, dict):
         for k in sorted(obj.keys()):
