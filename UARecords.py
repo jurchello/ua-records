@@ -1,14 +1,19 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List
 
 import gi
 
-from base_edit_form import BaseEditForm
-gi.require_version("Gtk", "3.0") # pylint: disable=wrong-import-position
-from gi.repository import Gtk, GObject
-
+gi.require_version("Gtk", "3.0")  # pylint: disable=wrong-import-position
+gi.require_version("GObject", "2.0")  # pylint: disable=wrong-import-position
+from gi.repository import GObject, Gtk
 from gramps.gen.plug._gramplet import Gramplet
-from settings.settings_manager import get_settings_manager, SettingsManager
+
+from base_edit_form import BaseEditForm
+from configs.constants import sync_label_mode_from_density, sync_tab_mode_from_density
+from edit_form import EditForm
+from providers import FORM_REGISTRY
+from settings.settings_manager import SettingsManager, get_settings_manager
 from settings.settings_ui import SettingsUI
 from ulogging.autoinit import logger
 
@@ -27,7 +32,7 @@ class UARecords(Gramplet):
         super().__init__(gui, nav_group)
         self.model: Gtk.ListStore | None = None
         self.opts_cache: List[MenuOption] = []
-        logger.channel("success").info("UARecords gramplet initialization completed")       
+        logger.channel("success").info("UARecords gramplet initialization completed")
 
     def init(self) -> None:
         logger.channel("success").debug("Starting gramplet initialization process")
@@ -55,12 +60,25 @@ class UARecords(Gramplet):
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Список форм", renderer, text=1)
         view.append_column(column)
+
+        for form_id, provider in FORM_REGISTRY.items():
+            title = provider.get("list_label", provider.get("title", form_id))
+            self.model.append((form_id, title))
+
+        view.connect("row-activated", self._on_row_activated)
+
         scroll = Gtk.ScrolledWindow()
         scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll.set_vexpand(True)
         scroll.add(view)
         vbox.pack_start(scroll, True, True, 0)
         return vbox
+
+    def _on_row_activated(self, treeview: Gtk.TreeView, path: Gtk.TreePath, _column: Gtk.TreeViewColumn) -> None:
+        model = treeview.get_model()
+        form_id = model[path][0]
+        win = EditForm(dbstate=self.dbstate, uistate=self.uistate, form_id=form_id)
+        win.show()
 
     def build_options(self) -> None:
         self.opts_cache = self.settings_ui.build_options()
@@ -82,9 +100,21 @@ class UARecords(Gramplet):
 
         self.settings_manager.set_form_density(opts[6].get_value())
 
-        self.settings_manager.set_person_name_length(int(opts[7].get_value()))
-        self.settings_manager.set_place_title_length(int(opts[8].get_value()))
-        self.settings_manager.set_citation_text_length(int(opts[9].get_value()))
+        # Handle both 10 and 11 option cases
+        if len(opts) >= 11:
+            # New format with tab density
+            self.settings_manager.set_tab_density(opts[7].get_value())
+            self.settings_manager.set_person_name_length(int(opts[8].get_value()))
+            self.settings_manager.set_place_title_length(int(opts[9].get_value()))
+            self.settings_manager.set_citation_text_length(int(opts[10].get_value()))
+        else:
+            # Old format without tab density
+            self.settings_manager.set_person_name_length(int(opts[7].get_value()))
+            self.settings_manager.set_place_title_length(int(opts[8].get_value()))
+            self.settings_manager.set_citation_text_length(int(opts[9].get_value()))
+
+        sync_label_mode_from_density()
+        sync_tab_mode_from_density()
 
         self._refresh_open_forms()
 
@@ -94,8 +124,8 @@ class UARecords(Gramplet):
 
     def _refresh_open_forms(self) -> None:
         for win in Gtk.Window.list_toplevels():
-            if isinstance(win, BaseEditForm) and hasattr(win, "refresh_options"):
+            if isinstance(win, BaseEditForm) and hasattr(win, "_on_refresh_options"):
                 try:
-                    win.refresh_options(None)
+                    win._on_refresh_options(None)
                 except Exception:
                     pass

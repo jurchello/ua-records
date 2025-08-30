@@ -1,26 +1,32 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Protocol, Set, Tuple
+
 from .builder import deep_diff
+
 
 @dataclass(frozen=True)
 class Key:
     kind: str
     handle: str
 
+
 class Serializer(Protocol):
     def __call__(self, obj: Any) -> Dict[str, Any]: ...
+
 
 class CommitAdapter(Protocol):
     def add(self, kind: str, obj: Any) -> str: ...
     def commit(self, kind: str, obj: Any) -> None: ...
-    # remove(...) не обов’язково у протоколі; перевіряємо через getattr під час виконання.
+
 
 @dataclass
 class Action:
     fn: Callable[..., None]
     args: List[Key]
     kwargs: Dict[str, Any]
+
 
 class IdentityMap:
     """Unit-of-Work for Gramps objects (H only; VH appear as soon as created).
@@ -29,6 +35,7 @@ class IdentityMap:
     - Serializes objects to compute diffs and previews.
     - Commits changes via the supplied adapter.
     """
+
     def __init__(self) -> None:
         self._store: Dict[Key, Any] = {}
         self._new: Set[Key] = set()
@@ -47,7 +54,7 @@ class IdentityMap:
             raise ValueError(f"no serializer for kind={kind}")
         return fn(obj)
 
-    def _snapshot(self, kind: str, handle: str, obj: Any, *, empty: bool=False) -> None:
+    def _snapshot(self, kind: str, handle: str, obj: Any, *, empty: bool = False) -> None:
         k = Key(kind, handle)
         self._baseline[k] = {} if empty else self._serialize(kind, obj)
 
@@ -110,8 +117,16 @@ class IdentityMap:
             before = self._baseline.get(k, {})
             after = self._serialize(k.kind, obj)
             delta = deep_diff(before, after)
-            if delta != {}:
-                modified_items.append({"kind": k.kind, "handle": k.handle, "before": before, "after": after, "delta": delta})
+            if delta:
+                modified_items.append(
+                    {
+                        "kind": k.kind,
+                        "handle": k.handle,
+                        "before": before,
+                        "after": after,
+                        "delta": delta,
+                    }
+                )
         for k in self._deleted:
             obj = self._store.get(k)
             before = self._baseline.get(k, self._serialize(k.kind, obj) if obj is not None else {})

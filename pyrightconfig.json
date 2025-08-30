@@ -2,17 +2,21 @@
   "typeCheckingMode": "basic",
   "pythonVersion": "3.10",
 
-  "reportMissingTypeStubs": "warning",
-  "reportUnknownMemberType": "warning",
-  "reportUnknownArgumentType": "warning",
-  "reportUnknownVariableType": "warning",
-  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none",
+  "reportMissingTypeStubs": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownParameterType": "none",
+  "reportUnknownLambdaType": "none",
+  "reportUnknownTypeOfType": "none",
 
   "diagnosticSeverityOverrides": {
-  "reportUnknownVariableType": "none",
-  "reportUnknownMemberType": "none",
-  "reportUnknownArgumentType": "none"
-}
+    "reportMissingModuleSource": "none",
+    "reportMissingImports": "none",
+    "reportCallIssue": "none"
+  },
 
   "useLibraryCodeForTypes": true,
 

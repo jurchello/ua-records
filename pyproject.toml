@@ -1,8 +1,30 @@
 [tool.black]
-line-length = 100
+line-length = 120
 target-version = ["py310"]
 
 [tool.isort]
 profile = "black"
-line_length = 100
+line_length = 120
 known_first_party = ["UARecords"]
+
+[tool.ruff]
+extend-exclude = ["UARecords.gpr.py"]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "E","F","W","I",
+  "UP","B","C4","SIM",
+  "ARG","RUF","PLR"
+]
+ignore = [
+  "PLR0902","PLR0911","PLR0912","PLR0913","PLR0914","PLR0915","PLR0917",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"UARecords.py" = ["E402"]
+"base_edit_form.py" = ["E402"]
+"services/state_collector.py" = ["E402"]
+"uhelpers/gtk_helpers.py" = ["E402"]
+"ui/*.py" = ["E402"]

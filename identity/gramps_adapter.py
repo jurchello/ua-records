@@ -1,13 +1,16 @@
 from __future__ import annotations
+
 from typing import Any, Callable, Dict
+
 
 class GrampsAdapter:
     """Thin adapter to map kind → concrete add/commit/remove callables."""
+
     def __init__(
         self,
         add_map: Dict[str, Callable[[Any], str]],
         commit_map: Dict[str, Callable[[Any], None]],
-        remove_map: Dict[str, Callable[[str], None]] | None = None
+        remove_map: Dict[str, Callable[[str], None]] | None = None,
     ) -> None:
         self.add_map = add_map
         self.commit_map = commit_map

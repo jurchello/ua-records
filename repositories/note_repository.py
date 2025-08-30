@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Iterator, Optional, List, Any
+
+from typing import Any, Iterator, Optional
+
 from gramps.gen.db.txn import DbTxn
 from gramps.gen.lib import Note
 
@@ -24,18 +26,18 @@ class NoteRepository(BasicPrimaryObjectRepository):
 
     def get_text(self, note: Note) -> str:
         return note.get()
-    
+
     def get_format(self, note: Note) -> int:
         return note.get_format()
-    
+
     def get_type(self, note: Note) -> str:
         return note.get_type()
-    
+
     def get_styledtext(self, note: Note) -> Any:
         return note.get_styledtext()
-    
+
     def append_text(self, note: Note, text: str) -> None:
         note.append(text)
-    
+
     def set_text(self, note: Note, text: str) -> None:
         note.set(text)

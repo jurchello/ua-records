@@ -1,30 +1,31 @@
 from __future__ import annotations
+
 from typing import Any, Dict, List, Tuple
+
 from schema_types import ID_KEYS
+
 
 def parse_path(path: str) -> List[Tuple[str, str | None]]:
     """Parse dotted paths with optional [key] selectors into segments.
     Returns list of (field, key) where key=None for scalar/obj, or str for keyed list.
-    Example: 'primary_name.surnames[Петренко].type' ->
-        [('primary_name', None), ('surnames', 'Петренко'), ('type', None)]
     """
     out: List[Tuple[str, str | None]] = []
     i = 0
-    cur = ''
+    cur = ""
     key = None
     while i < len(path):
         c = path[i]
-        if c == '.':
+        if c == ".":
             if cur:
                 out.append((cur, key))
-                cur, key = '', None
+                cur, key = "", None
             i += 1
             continue
-        if c == '[':
-            j = path.find(']', i+1)
+        if c == "[":
+            j = path.find("]", i + 1)
             if j == -1:
                 raise ValueError(f"Unmatched '[' in path: {path}")
-            key = path[i+1:j]
+            key = path[i + 1 : j]
             i = j + 1
             continue
         cur += c
@@ -32,6 +33,7 @@ def parse_path(path: str) -> List[Tuple[str, str | None]]:
     if cur:
         out.append((cur, key))
     return out
+
 
 def _ensure_keyed_item(lst: List[Any], key: str) -> Dict[str, Any]:
     # find by any of ID_KEYS
@@ -46,6 +48,7 @@ def _ensure_keyed_item(lst: List[Any], key: str) -> Dict[str, Any]:
     obj[ID_KEYS[0]] = key
     lst.append(obj)
     return obj
+
 
 def set_at_path(root: Dict[str, Any], path: str, value: Any) -> None:
     segs = parse_path(path)
@@ -72,9 +75,10 @@ def set_at_path(root: Dict[str, Any], path: str, value: Any) -> None:
                     item.update(value)
                 else:
                     # store scalar under 'value'
-                    item['value'] = value
+                    item["value"] = value
                 return
             cur = item
+
 
 def delete_object(objs: Dict[str, Dict[str, Any]], oid: str) -> None:
     if oid in objs:

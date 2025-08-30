@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 import os
 import time
@@ -6,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Tuple
 
-from uconstants.cache import META_SUFFIX, DEFAULT_METADATA, CODEC_JSON
+from uconstants.cache import CODEC_JSON, DEFAULT_METADATA, META_SUFFIX
 
 
 @dataclass

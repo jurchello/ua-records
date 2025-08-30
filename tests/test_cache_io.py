@@ -3,12 +3,13 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-
-from cache import CacheManager, CacheStatus, CacheKey, key_for_list, key_for_formstate, path_for
+from cache import CacheKey, CacheManager, CacheStatus, key_for_formstate, key_for_list, path_for
+from cache.store_file import CacheMetadata, CacheStoreFile
 from uconstants.cache import (
-    CODEC_LISTS,
-    CODEC_JSON,
     CODEC_FORMSTATE,
+    CODEC_JSON,
+    CODEC_LISTS,
+    DEFAULT_METADATA,
     NAMESPACE_LISTS,
 )
 
@@ -46,7 +47,13 @@ def test_lists_roundtrip(tmp_path: Path) -> None:
 def test_json_roundtrip(tmp_path: Path) -> None:
     cm = CacheManager(cache_dir=tmp_path)
 
-    key = CacheKey(namespace=NAMESPACE_LISTS, type="aggregated", dbid=DBID, version=SCHEMA_V, name="people_scan")
+    key = CacheKey(
+        namespace=NAMESPACE_LISTS,
+        type="aggregated",
+        dbid=DBID,
+        version=SCHEMA_V,
+        name="people_scan",
+    )
     payload = {
         "all_given": ["Петро", "Іван"],
         "all_surnames": ["Шевченко", "Іваненко"],
@@ -150,5 +157,53 @@ def test_clear_namespace(tmp_path: Path) -> None:
     removed_count = cm.clear_namespace(namespace=NAMESPACE_LISTS, dbid=DBID)
     assert removed_count >= 1
 
+    assert not p1.exists()
+    assert not p2.exists()
+
+
+def test_read_returns_error_on_unknown_codec(tmp_path: Path) -> None:
+    cm = CacheManager(cache_dir=tmp_path)
+    key = key_for_list("unknown_codec", DBID, SCHEMA_V, "all")
+    store = CacheStoreFile(tmp_path)
+    p = path_for(tmp_path, key)
+    payload = b"[]"
+    meta = CacheMetadata(ttl=None, codec="__unknown__", schema_version=SCHEMA_V, created_at=0.0, updated_at=0.0)
+    store.write(p, payload, meta)
+    status, loaded = cm.read(key)
+    assert status is CacheStatus.ERROR
+    assert loaded is None
+
+
+def test_info_with_missing_meta_file(tmp_path: Path) -> None:
+    cm = CacheManager(cache_dir=tmp_path)
+    key = key_for_list("no_meta", DBID, SCHEMA_V, "all")
+    p = path_for(tmp_path, key)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(b"[]")
+    info = cm.info(key)
+    assert info.exists
+    assert info.codec == CODEC_JSON
+    assert info.ttl == DEFAULT_METADATA["ttl"]
+
+
+def test_delete_is_idempotent(tmp_path: Path) -> None:
+    cm = CacheManager(cache_dir=tmp_path)
+    key = key_for_list("idempotent", DBID, SCHEMA_V, "all")
+    cm.write_full(key, ["x"], ttl_sec=10, codec=CODEC_LISTS, schema_version=SCHEMA_V)
+    assert cm.delete(key) is True
+    assert cm.delete(key) is False
+
+
+def test_clear_namespace_all(tmp_path: Path) -> None:
+    cm = CacheManager(cache_dir=tmp_path)
+    k1 = key_for_list("a", DBID, SCHEMA_V, "all")
+    k2 = key_for_list("b", DBID + "2", SCHEMA_V, "all")
+    cm.write_full(k1, ["x"], ttl_sec=10, codec=CODEC_LISTS, schema_version=SCHEMA_V)
+    cm.write_full(k2, ["y"], ttl_sec=10, codec=CODEC_LISTS, schema_version=SCHEMA_V)
+    p1 = path_for(tmp_path, k1)
+    p2 = path_for(tmp_path, k2)
+    assert p1.exists() and p2.exists()
+    removed = cm.clear_namespace(namespace=NAMESPACE_LISTS, dbid=None)
+    assert removed >= 1
     assert not p1.exists()
     assert not p2.exists()

@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
+
 
 @dataclass
 class PlanItem:
@@ -8,19 +10,23 @@ class PlanItem:
     oid: str
     data: Dict[str, Any]
 
+
 @dataclass
 class CommitPlan:
     creates: List[PlanItem]
     updates: List[PlanItem]
     deletes: List[PlanItem]
 
-def plan_commit(baseline: Dict[Tuple[str,str], Dict[str,Any]], target: Dict[Tuple[str,str], Dict[str,Any]]) -> CommitPlan:
+
+def plan_commit(
+    baseline: Dict[Tuple[str, str], Dict[str, Any]], target: Dict[Tuple[str, str], Dict[str, Any]]
+) -> CommitPlan:
     creates: List[PlanItem] = []
     updates: List[PlanItem] = []
     deletes: List[PlanItem] = []
 
     base_keys = set(baseline.keys())
-    tgt_keys  = set(target.keys())
+    tgt_keys = set(target.keys())
 
     for k in sorted(tgt_keys - base_keys):
         kind, oid = k

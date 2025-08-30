@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import List, Any
+
+from typing import Any, List
+
 from gramps.gen.lib.citationbase import IndirectCitationBase
 
 from repositories.base_repository import BaseRepository
@@ -21,10 +23,14 @@ class IndirectCitationBaseRepository(BaseRepository):
         """Return True if the object has a reference to the given Citation handle."""
         return indirect_citation_base.has_citation_reference(citation_handle)
 
-    def remove_citation_references(self, indirect_citation_base: IndirectCitationBase, citation_handle_list: List[str]) -> None:
+    def remove_citation_references(
+        self, indirect_citation_base: IndirectCitationBase, citation_handle_list: List[str]
+    ) -> None:
         """Remove all references to the Citation handles in the list."""
         indirect_citation_base.remove_citation_references(citation_handle_list)
 
-    def replace_citation_references(self, indirect_citation_base: IndirectCitationBase, old_handle: str, new_handle: str) -> None:
+    def replace_citation_references(
+        self, indirect_citation_base: IndirectCitationBase, old_handle: str, new_handle: str
+    ) -> None:
         """Replace all references to old Citation handle with new Citation handle."""
         indirect_citation_base.replace_citation_references(old_handle, new_handle)

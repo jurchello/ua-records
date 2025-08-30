@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import Any, Dict, List, Tuple
+
 
 def _collect_vh_ids(obj: Any, acc: List[str]) -> None:
     if isinstance(obj, dict):
@@ -12,7 +14,8 @@ def _collect_vh_ids(obj: Any, acc: List[str]) -> None:
         if obj.startswith("VH:"):
             acc.append(obj)
 
-def validate_hv_graph(graph: Dict[Tuple[str,str], Dict[str,Any]]) -> List[str]:
+
+def validate_hv_graph(graph: Dict[Tuple[str, str], Dict[str, Any]]) -> List[str]:
     """Ensure that all VH references point to objects present in the graph to be created."""
     errors: List[str] = []
     vh_targets = {oid for _, oid in graph.keys() if oid.startswith("VH:")}

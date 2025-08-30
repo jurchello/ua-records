@@ -1,20 +1,23 @@
+import logging
 import re
 from pathlib import Path
-import logging
+
 import pytest
 
-from ulogging import setup_logging, get_logger
 from uconstants.logging import (
-    DEFAULT_CHANNELS,
-    ChannelConfigOptional,
-    DEFAULT_LOG_NAME,
     DEFAULT_BASE_LOGGER_NAME,
+    DEFAULT_CHANNELS,
+    DEFAULT_LOG_NAME,
+    ChannelConfigOptional,
 )
+from ulogging import get_logger, setup_logging
 
 # ---------- helpers ----------
 
+
 def read_text(p: Path) -> str:
     return p.read_text(encoding="utf-8") if p.exists() else ""
+
 
 def rm(p: Path) -> None:
     """Clear file content instead of removing to avoid logging handler issues"""
@@ -23,6 +26,7 @@ def rm(p: Path) -> None:
     except FileNotFoundError:
         pass
 
+
 def line_has_std_format(line: str, expected_filename: str) -> bool:
     # [YYYY-MM-DD HH:MM:SS : filename.py : N : L]:
     pat = rf"^\[\d{{4}}-\d{{2}}-\d{{2}} \d{{2}}:\d{{2}}:\d{{2}} : {re.escape(expected_filename)} : \d+ : [A-Z]\]: "
@@ -30,6 +34,7 @@ def line_has_std_format(line: str, expected_filename: str) -> bool:
 
 
 # ---------- tests ----------
+
 
 def test_success_channel_writes_to_own_file(tmp_path: Path) -> None:
     setup_logging(
@@ -48,7 +53,6 @@ def test_success_channel_writes_to_own_file(tmp_path: Path) -> None:
     txt = read_text(success_file)
     assert "Done OK" in txt
     first_line = txt.splitlines()[0]
-    # ім'я цього тестового файлу виводиться у форматі
     assert line_has_std_format(first_line, expected_filename="test_logging_channels.py")
 
 
@@ -184,6 +188,7 @@ def test_log_line_format_contains_filename_and_lineno(tmp_path: Path) -> None:
     line0 = read_text(success_file).splitlines()[0]
     assert line_has_std_format(line0, "test_logging_channels.py")
     assert line0.endswith("format-check")
+
 
 def test_generator_consumed_when_pretty_logging(tmp_path: Path) -> None:
     """Test that generators are consumed and logged as lists when pretty=True."""

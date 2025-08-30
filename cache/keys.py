@@ -3,12 +3,16 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from uconstants.cache import (
-    NAMESPACE_LISTS,
     NAMESPACE_FORMSTATE,
+    NAMESPACE_LISTS,
 )
-from uconstants.paths import USER_DATA_DIRNAME, CACHE_SUBDIR
+from uconstants.paths import CACHE_SUBDIR, USER_DATA_DIRNAME
+
+if TYPE_CHECKING:
+    from gramps.gen.db.base import DbReadBase
 
 
 @dataclass(frozen=True)
@@ -25,7 +29,8 @@ class CacheKey:
 
 def base_cache_dir() -> Path:
     try:
-        from gramps.gen.const import USER_DATA
+        from gramps.gen.const import USER_DATA  # pylint: disable=import-outside-toplevel
+
         root = Path(USER_DATA)
     except Exception:
         root = Path(os.path.expanduser("~"))
@@ -37,7 +42,7 @@ def path_for(base_dir: Path, key: CacheKey) -> Path:
     return base_dir.joinpath(ns, t, dbid, ver, f"{name}.json")
 
 
-def get_dbid(db: object) -> str:
+def get_dbid(db: DbReadBase) -> str:
     f = getattr(db, "get_dbid", None)
     if callable(f):
         try:

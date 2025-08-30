@@ -1,15 +1,20 @@
 from __future__ import annotations
-from typing import Tuple, Any
+
+from typing import TYPE_CHECKING, Any, Tuple
+
 from gramps.gen.lib import GenderStats
 
 from repositories.base_repository import BaseRepository
+
+if TYPE_CHECKING:
+    from gramps.gen.db.base import DbReadBase
 
 
 class GenderStatsRepository(BaseRepository):
     """Repository for GenderStats objects with all GenderStats-specific methods."""
 
     # GenderStats-specific methods from stub
-    def count_person(self, stats: GenderStats, person: Any, db: Any, date: Any | None = None) -> None:
+    def count_person(self, stats: GenderStats, person: Any, db: DbReadBase, date: Any | None = None) -> None:
         """Count a person in the gender statistics."""
         stats.count_person(person, db, date)
 

@@ -1,36 +1,40 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Iterable, TypeVar, Generic, Dict, cast
+from typing import Any, Dict, Generic, Iterable, TypeVar, cast
 
 from uconstants.cache import (
+    CODEC_FORMSTATE,
     CODEC_JSON,
     CODEC_LISTS,
-    CODEC_FORMSTATE,
 )
 
 JSONScalar = str | int | float | bool | None
 JSONValue = JSONScalar | list["JSONValue"] | dict[str, "JSONValue"]
 FormStateLike = dict[str, JSONValue]
 
-T_in = TypeVar("T_in", contravariant=True)
-T_out = TypeVar("T_out", covariant=True)
+T_in_contra = TypeVar("T_in_contra", contravariant=True)  # pylint: disable=invalid-name
+T_out_co = TypeVar("T_out_co", covariant=True)  # pylint: disable=invalid-name
 
 
-class BaseCodec(Generic[T_in, T_out]):
+class BaseCodec(Generic[T_in_contra, T_out_co]):
     name: str
-    def encode(self, obj: T_in) -> bytes:
+
+    def encode(self, obj: T_in_contra) -> bytes:
         raise NotImplementedError
-    def decode(self, data: bytes) -> T_out:
+
+    def decode(self, data: bytes) -> T_out_co:
         raise NotImplementedError
 
 
 class ListsCodec(BaseCodec[Iterable[str], list[str]]):
     name = CODEC_LISTS
+
     def encode(self, obj: Iterable[str]) -> bytes:
         it: Iterable[object] = cast(Iterable[object], obj)
         items: list[str] = [str(x) for x in it]
         return json.dumps(items, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
     def decode(self, data: bytes) -> list[str]:
         v = json.loads(data.decode("utf-8"))
         if isinstance(v, list):
@@ -41,16 +45,20 @@ class ListsCodec(BaseCodec[Iterable[str], list[str]]):
 
 class JSONCodec(BaseCodec[JSONValue, JSONValue]):
     name = CODEC_JSON
+
     def encode(self, obj: JSONValue) -> bytes:
         return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
     def decode(self, data: bytes) -> JSONValue:
         return cast(JSONValue, json.loads(data.decode("utf-8")))
 
 
 class FormStateCodec(BaseCodec[FormStateLike, FormStateLike]):
     name = CODEC_FORMSTATE
+
     def encode(self, obj: FormStateLike) -> bytes:
         return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
     def decode(self, data: bytes) -> FormStateLike:
         v = json.loads(data.decode("utf-8"))
         if isinstance(v, dict):

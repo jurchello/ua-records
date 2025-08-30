@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from gramps.gen.lib import PlaceType
 
 from repositories.base_repository import BaseRepository

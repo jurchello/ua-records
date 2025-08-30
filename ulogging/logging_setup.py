@@ -4,39 +4,44 @@ import logging
 import logging.config
 import os
 import pprint
-from dataclasses import is_dataclass, asdict
+from collections.abc import Generator, Iterator
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Optional, Dict, List, cast
-from collections.abc import Iterator, Generator
+from typing import Any, Dict, Iterable, List, Mapping, Optional, cast
 
 from uconstants.logging import (
-    LOG_LINE_FORMAT,
-    LOG_DATE_FORMAT,
-    LOG_MAX_BYTES,
-    LOG_BACKUP_COUNT,
-    DEFAULTS,
+    DEFAULT_BASE_LOGGER_NAME,
     DEFAULT_CHANNELS,
     DEFAULT_LOG_NAME,
-    DEFAULT_BASE_LOGGER_NAME,
-    default_logs_dir,
+    DEFAULTS,
+    LOG_BACKUP_COUNT,
+    LOG_DATE_FORMAT,
+    LOG_LINE_FORMAT,
+    LOG_MAX_BYTES,
     ChannelConfigOptional,
+    default_logs_dir,
 )
 
 # --------------------------------------------------------------------------------------
 # Logs dir resolution
 # --------------------------------------------------------------------------------------
 
+
 def _resolve_logs_dir() -> Path:
     return default_logs_dir()
+
 
 # --------------------------------------------------------------------------------------
 # Formatting / serialization
 # --------------------------------------------------------------------------------------
 
+
 class UniformFormatter(logging.Formatter):
     """Formatter that prints one-letter level code via %(levelname).1s in LOG_LINE_FORMAT."""
+
     def __init__(self) -> None:
         super().__init__(fmt=LOG_LINE_FORMAT, datefmt=LOG_DATE_FORMAT)
+
 
 class PrettySerializer:
     def __init__(
@@ -82,7 +87,7 @@ class PrettySerializer:
         if isinstance(obj, set):
             s = cast(set[Any], obj)
             return sorted(map(repr, s))
-        
+
         if isinstance(obj, tuple):
             return list(cast(tuple[Any, ...], obj))
 
@@ -119,13 +124,23 @@ class PrettySerializer:
             text = f"{text}  (type={self._typename(obj)})"
         return text
 
+
 # --------------------------------------------------------------------------------------
 # Fluent API
 # --------------------------------------------------------------------------------------
 
+
 class FluentChannelLogger:
     """Fluent API: logger.channel('name').info(...).debug(...).error(...)."""
-    def __init__(self, logger: logging.Logger, *, pretty: bool = False, with_types: bool = False, stack_on_error: bool = False):
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        *,
+        pretty: bool = False,
+        with_types: bool = False,
+        stack_on_error: bool = False,
+    ):
         self._logger: logging.Logger = logger
         self._pretty: bool = pretty
         self._with_types: bool = with_types
@@ -138,38 +153,73 @@ class FluentChannelLogger:
             return self._ser.dumps(msg_or_obj, use_types)
         return str(msg_or_obj)
 
-    def debug(self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any) -> "FluentChannelLogger":
+    def debug(
+        self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any
+    ) -> "FluentChannelLogger":
         if self._logger.isEnabledFor(logging.DEBUG):
             self._logger.debug(self._fmt(msg_or_obj, with_types), *args, stacklevel=2, **kwargs)
         return self
 
-    def info(self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any) -> "FluentChannelLogger":
+    def info(
+        self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any
+    ) -> "FluentChannelLogger":
         if self._logger.isEnabledFor(logging.INFO):
             self._logger.info(self._fmt(msg_or_obj, with_types), *args, stacklevel=2, **kwargs)
         return self
 
-    def warning(self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any) -> "FluentChannelLogger":
+    def warning(
+        self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, **kwargs: Any
+    ) -> "FluentChannelLogger":
         if self._logger.isEnabledFor(logging.WARNING):
             self._logger.warning(self._fmt(msg_or_obj, with_types), *args, stacklevel=2, **kwargs)
         return self
 
-    def error(self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, exc: BaseException | None = None, **kwargs: Any) -> "FluentChannelLogger":
+    def error(
+        self,
+        msg_or_obj: Any,
+        *args: Any,
+        with_types: Optional[bool] = None,
+        exc: BaseException | None = None,
+        **kwargs: Any,
+    ) -> "FluentChannelLogger":
         if isinstance(msg_or_obj, BaseException) and exc is None:
             exc = msg_or_obj
             msg = repr(msg_or_obj)
         else:
             msg = self._fmt(msg_or_obj, with_types)
-        self._logger.error(msg, *args, stacklevel=2, exc_info=exc if (exc or self._stack_on_error_default) else None, **kwargs)
+        self._logger.error(
+            msg,
+            *args,
+            stacklevel=2,
+            exc_info=exc if (exc or self._stack_on_error_default) else None,
+            **kwargs,
+        )
         return self
 
-    def critical(self, msg_or_obj: Any, *args: Any, with_types: Optional[bool] = None, exc: BaseException | None = None, **kwargs: Any) -> "FluentChannelLogger":
+    def critical(
+        self,
+        msg_or_obj: Any,
+        *args: Any,
+        with_types: Optional[bool] = None,
+        exc: BaseException | None = None,
+        **kwargs: Any,
+    ) -> "FluentChannelLogger":
         msg = self._fmt(msg_or_obj, with_types)
         self._logger.critical(msg, *args, stacklevel=2, exc_info=exc if exc else None, **kwargs)
         return self
 
+
 class ChannelRouter:
     """get_logger(...).channel('name') -> FluentChannelLogger"""
-    def __init__(self, base_name: str, *, pretty: bool = False, with_types: bool = False, channel_specs: Dict[str, ChannelConfigOptional] | None = None):
+
+    def __init__(
+        self,
+        base_name: str,
+        *,
+        pretty: bool = False,
+        with_types: bool = False,
+        channel_specs: Dict[str, ChannelConfigOptional] | None = None,
+    ):
         self._base: str = base_name
         self._pretty: bool = pretty
         self._with_types: bool = with_types
@@ -186,19 +236,29 @@ class ChannelRouter:
             stack_on_error=bool(spec.get("stack_on_error", False)),
         )
 
+
 # --------------------------------------------------------------------------------------
 # Public API
 # --------------------------------------------------------------------------------------
 
-_channels_runtime: Dict[str, ChannelConfigOptional] = {}
-_base_logger_name: str = DEFAULT_BASE_LOGGER_NAME  # configurable via setup_logging(base_name=...)
+_STATE: Dict[str, Any] = {
+    "base_logger_name": DEFAULT_BASE_LOGGER_NAME,  # type: str
+    "channels_runtime": {},  # type: Dict[str, ChannelConfigOptional]
+}
+
 
 def get_logger(name: str | None = None, *, pretty: bool = False, with_types: bool = False) -> ChannelRouter:
     """
     Returns a ChannelRouter bound to `name` or to the globally configured base name.
     """
-    base = name or _base_logger_name
-    return ChannelRouter(base, pretty=pretty, with_types=with_types, channel_specs=_channels_runtime)
+    base = name or _STATE["base_logger_name"]
+    return ChannelRouter(
+        base,
+        pretty=pretty,
+        with_types=with_types,
+        channel_specs=cast(Dict[str, ChannelConfigOptional], _STATE["channels_runtime"]),
+    )
+
 
 def setup_logging(
     *,
@@ -217,9 +277,7 @@ def setup_logging(
       - optional console mirroring (all channels or base only)
       - a base logger (non-channeled) writing to DEFAULT_LOG_NAME
     """
-    global _channels_runtime, _base_logger_name
-
-    _base_logger_name = base_name
+    _STATE["base_logger_name"] = base_name
 
     logs_dir = logs_dir or _resolve_logs_dir()
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -233,10 +291,8 @@ def setup_logging(
     if os.getenv("APP_LOG_CONSOLE_FOR_ALL") in {"1", "true", "yes", "on"}:
         console_for_all_channels = True
 
-    # Handlers registry
     handlers: Dict[str, Dict[str, Any]] = {}
 
-    # Console handler (optional)
     if enable_console:
         handlers["console"] = {
             "class": "logging.StreamHandler",
@@ -244,7 +300,6 @@ def setup_logging(
             "formatter": "uniform",
         }
 
-    # Default file handler for the base logger (non-channeled logs)
     handlers["file_default"] = {
         "class": "logging.handlers.RotatingFileHandler",
         "level": file_level,
@@ -255,9 +310,8 @@ def setup_logging(
         "encoding": "utf-8",
     }
 
-    # Channels (per-file)
     channels = channels or DEFAULT_CHANNELS
-    _channels_runtime = channels
+    _STATE["channels_runtime"] = channels
 
     channel_loggers: Dict[str, Dict[str, Any]] = {}
     for ch_name, spec in channels.items():
@@ -275,7 +329,7 @@ def setup_logging(
             "encoding": "utf-8",
         }
 
-        ch_logger_name = f"{_base_logger_name}.channel.{ch_name}"
+        ch_logger_name = f"{_STATE['base_logger_name']}.channel.{ch_name}"
         ch_handlers: List[str] = [handler_id]
         if enable_console and console_for_all_channels:
             ch_handlers.append("console")
@@ -286,12 +340,10 @@ def setup_logging(
             "propagate": False,
         }
 
-    # Root: only console if explicitly requested "for all"
     root_handlers: List[str] = []
     if enable_console and console_for_all_channels:
         root_handlers.append("console")
 
-    # Base logger (non-channeled) -> default.log (+ optional console)
     base_handlers: List[str] = ["file_default"]
     if enable_console and not console_for_all_channels:
         base_handlers.append("console")
@@ -302,7 +354,6 @@ def setup_logging(
         "propagate": False,
     }
 
-    # Final dictConfig
     config: Dict[str, Any] = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -311,7 +362,7 @@ def setup_logging(
         "root": {"level": root_level, "handlers": root_handlers},
         "loggers": {
             **channel_loggers,
-            _base_logger_name: base_logger_cfg,  # base logger bound to default.log
+            _STATE["base_logger_name"]: base_logger_cfg,
         },
     }
     logging.config.dictConfig(config)

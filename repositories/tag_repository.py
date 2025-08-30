@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Iterator, Optional, List, Any, Tuple
+
+from typing import Any, Iterator, List, Optional, Tuple
+
 from gramps.gen.db.txn import DbTxn
 from gramps.gen.lib import Tag
 

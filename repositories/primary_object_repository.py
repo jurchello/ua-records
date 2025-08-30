@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import List, Any, Tuple
+
+from typing import List
+
 from gramps.gen.lib import PrimaryObject
 
 from repositories.base_repository import BaseRepository
@@ -17,6 +19,8 @@ class PrimaryObjectRepository(BaseRepository):
         """Remove all references to the handles in the list."""
         primary_obj.remove_handle_references(classname, handle_list)
 
-    def replace_handle_reference(self, primary_obj: PrimaryObject, classname: str, old_handle: str, new_handle: str) -> None:
+    def replace_handle_reference(
+        self, primary_obj: PrimaryObject, classname: str, old_handle: str, new_handle: str
+    ) -> None:
         """Replace all references to old_handle with new_handle."""
         primary_obj.replace_handle_reference(classname, old_handle, new_handle)

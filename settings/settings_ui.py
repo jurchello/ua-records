@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from gramps.gen.plug.menu import EnumeratedListOption, StringOption, NumberOption
+from gramps.gen.plug.menu import EnumeratedListOption, NumberOption, StringOption
 
 if TYPE_CHECKING:
     from gramps.gen.plug.menu import MenuOption
+
     from .settings_manager import SettingsManager
 
 
@@ -27,6 +28,7 @@ class SettingsUI:
         self._add_marriage_cols()
 
         self._add_density()
+        self._add_tab_density()
 
         self._add_person_len()
         self._add_place_len()
@@ -56,35 +58,49 @@ class SettingsUI:
 
     def _add_birth_cols(self) -> None:
         o = NumberOption("Колонки народження", self.cfg.get_birth_columns(), 1, 5)
-        o.set_help("1–5"); self.opts.append(o)
+        o.set_help("1–5")
+        self.opts.append(o)
 
     def _add_death_cols(self) -> None:
         o = NumberOption("Колонки смерті", self.cfg.get_death_columns(), 1, 5)
-        o.set_help("1–5"); self.opts.append(o)
+        o.set_help("1–5")
+        self.opts.append(o)
 
     def _add_marriage_cols(self) -> None:
         o = NumberOption("Колонки шлюбу", self.cfg.get_marriage_columns(), 1, 5)
-        o.set_help("1–5"); self.opts.append(o)
+        o.set_help("1–5")
+        self.opts.append(o)
 
     def _add_density(self) -> None:
-        o = EnumeratedListOption("Щільність форм", self.cfg.get_form_density())
+        o = EnumeratedListOption("Стиль форм", self.cfg.get_form_density())
         o.add_item("compact", "Компактний")
         o.add_item("normal", "Нормальний")
         o.add_item("spacious", "Просторий")
-        o.set_help("Відстані між елементами")
+        o.set_help("Відстані між елементами та довжина міток полів")
+        self.opts.append(o)
+
+    def _add_tab_density(self) -> None:
+        o = EnumeratedListOption("Стиль заголовків табів", self.cfg.get_tab_density())
+        o.add_item("compact", "Компактний")
+        o.add_item("normal", "Нормальний")
+        o.add_item("spacious", "Просторий")
+        o.set_help("Довжина заголовків табів")
         self.opts.append(o)
 
     def _add_person_len(self) -> None:
         o = NumberOption("Довжина імен осіб", self.cfg.get_person_name_length(), 10, 100)
-        o.set_help("10–100 символів"); self.opts.append(o)
+        o.set_help("10–100 символів")
+        self.opts.append(o)
 
     def _add_place_len(self) -> None:
         o = NumberOption("Довжина назв місць", self.cfg.get_place_title_length(), 10, 100)
-        o.set_help("10–100 символів"); self.opts.append(o)
+        o.set_help("10–100 символів")
+        self.opts.append(o)
 
     def _add_citation_len(self) -> None:
         o = NumberOption("Довжина тексту цитат", self.cfg.get_citation_text_length(), 10, 100)
-        o.set_help("10–100 символів"); self.opts.append(o)
+        o.set_help("10–100 символів")
+        self.opts.append(o)
 
     def add_multiselect_option(self, title: str, selected: list[str], choices: list[tuple[str, str]]) -> None:
         _ = (title, selected, choices)

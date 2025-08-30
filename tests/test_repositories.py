@@ -1,33 +1,41 @@
 from __future__ import annotations
 
-from typing import Protocol, Iterable, cast
-from gramps.gen.db.base import DbReadBase
+from typing import TYPE_CHECKING, Iterable, Protocol, cast
+
+if TYPE_CHECKING:
+    from gramps.gen.db.base import DbReadBase
 
 from gramps.gen.lib import (
-    Person, Family, Event, Tag, Citation, Place, AttributeType,
+    AttributeType,
+    Citation,
+    Event,
+    Family,
+    Person,
+    Place,
+    Tag,
 )
 
-from repositories.person_repository import PersonRepository
-from repositories.family_repository import FamilyRepository
-from repositories.event_repository import EventRepository
-from repositories.tag_repository import TagRepository
-from repositories.citation_repository import CitationRepository
-from repositories.place_repository import PlaceRepository
-from repositories.backlink_repository import BacklinkRepository
 from repositories.attribute_repository import AttributeRepository
+from repositories.backlink_repository import BacklinkRepository
+from repositories.citation_repository import CitationRepository
+from repositories.event_repository import EventRepository
+from repositories.family_repository import FamilyRepository
+from repositories.person_repository import PersonRepository
+from repositories.place_repository import PlaceRepository
+from repositories.tag_repository import TagRepository
 
 
 class _HasAttrGetters(Protocol):
     def get_type(self) -> str: ...
     def get_value(self) -> object: ...
 
+
 class _BacklinksDb(Protocol):
-    def set_backlinks(
-        self, h: str, objtype: str, links: Iterable[tuple[str, object]]
-    ) -> None: ...
+    def set_backlinks(self, h: str, objtype: str, links: Iterable[tuple[str, object]]) -> None: ...
 
 
 # ---------- PersonRepository ----------
+
 
 def test_person_add_get_commit_iter(db: DbReadBase) -> None:
     repo = PersonRepository(db)
@@ -45,6 +53,7 @@ def test_person_add_get_commit_iter(db: DbReadBase) -> None:
 
 # ---------- FamilyRepository ----------
 
+
 def test_family_add_get_commit(db: DbReadBase) -> None:
     repo = FamilyRepository(db)
     f = Family()
@@ -55,6 +64,7 @@ def test_family_add_get_commit(db: DbReadBase) -> None:
 
 
 # ---------- EventRepository ----------
+
 
 def test_event_add_get_commit_iter(db: DbReadBase) -> None:
     repo = EventRepository(db)
@@ -67,6 +77,7 @@ def test_event_add_get_commit_iter(db: DbReadBase) -> None:
 
 
 # ---------- TagRepository ----------
+
 
 def test_tag_add_get_commit_find_and_handles(db: DbReadBase) -> None:
     repo = TagRepository(db)
@@ -85,6 +96,7 @@ def test_tag_add_get_commit_find_and_handles(db: DbReadBase) -> None:
 
 # ---------- CitationRepository ----------
 
+
 def test_citation_add_get_commit(db: DbReadBase) -> None:
     repo = CitationRepository(db)
     c = Citation()
@@ -96,6 +108,7 @@ def test_citation_add_get_commit(db: DbReadBase) -> None:
 
 # ---------- PlaceRepository ----------
 
+
 def test_place_add_get_commit(db: DbReadBase) -> None:
     repo = PlaceRepository(db)
     p = Place()
@@ -106,6 +119,7 @@ def test_place_add_get_commit(db: DbReadBase) -> None:
 
 
 # ---------- BacklinkRepository ----------
+
 
 def test_backlink_find_backlinks(db: DbReadBase) -> None:
     repo = BacklinkRepository(db)
@@ -119,13 +133,15 @@ def test_backlink_find_backlinks(db: DbReadBase) -> None:
 
 # ---------- AttributeRepository ----------
 
+
 def test_attribute_get_type(db: DbReadBase) -> None:
-    from gramps.gen.lib import Attribute, AttributeType
+    from gramps.gen.lib import Attribute
+
     repo = AttributeRepository(db)
-    
+
     attr = Attribute()
     attr.set_type(AttributeType.OCCUPATION)
     attr.set_value("Farmer")
-    
+
     assert repo.get_type(attr) == AttributeType.OCCUPATION
     assert repo.get_value(attr) == "Farmer"

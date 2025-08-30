@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import List, Any, Tuple
+
+from typing import Any, List, Tuple
+
 from gramps.gen.lib import RepoRef
 
 from repositories.base_repository import BaseRepository

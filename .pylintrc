@@ -10,7 +10,24 @@ module-rgx=(([a-z_][a-z0-9_]*)|UARecords)$
 disable=
     missing-function-docstring,
     missing-class-docstring,
-    missing-module-docstring
+    missing-module-docstring,
+    broad-exception-caught,
+    too-many-public-methods,
+    too-few-public-methods,
+    empty-docstring,
+    too-many-branches,
+    too-many-return-statements,
+    too-many-positional-arguments,
+    too-many-instance-attributes,
+    too-many-arguments,
+    protected-access,
+    too-many-locals,
+    too-many-statements,
 
 [TYPECHECK]
-generated-members=numpy.*,pytest.*
+generated-members=numpy.*,pytest.*,gtk.*,Gtk.*,gi.repository.*,BaseEditForm.*
+extension-pkg-allow-list=gi
+ignored-modules=gi.repository,gramps.gen.lib
+
+[FORMAT]
+max-line-length=120

@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Iterator, Optional, List, Any, Tuple
+
+from typing import Any, Iterator, List, Optional, Tuple
+
 from gramps.gen.db.txn import DbTxn
 from gramps.gen.lib import Person
 
@@ -114,7 +116,8 @@ class PersonRepository(BaseRepository):
         return person.get_person_ref_list()
 
     def get_primary_event_ref_list(self, person: Person) -> Any:
-        """Return the list of EventRef objects associated with Event instances that have been marked as primary events."""
+        """Return the list of EventRef objects associated with Event instances
+        that have been marked as primary events."""
         return person.get_primary_event_ref_list()
 
     def get_primary_name(self, person: Person) -> Any:

@@ -1,28 +1,32 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
-ID_KEYS: Tuple[str, ...] = ("handle","id","gid")
+ID_KEYS: Tuple[str, ...] = ("handle", "id", "gid")
+
 
 @dataclass
 class FlatRow:
-    section: str          # "new" | "modified" | "deleted"
+    section: str  # "new" | "modified" | "deleted"
     kind: str
     handle: str
-    path: str             # dotted path (with [id] for list items)
+    path: str  # dotted path (with [id] for list items)
     before: str
     after: str
-    status: int           # 0 same, 1 removed, 2 added, 3 changed
+    status: int  # 0 same, 1 removed, 2 added, 3 changed
+
 
 def _to_scalar(v: Any) -> str:
     if v is None:
         return ""
-    if isinstance(v,(str,int,float,bool)):
+    if isinstance(v, (str, int, float, bool)):
         return str(v)
     return str(v)
 
-def _flatten(obj: Any, prefix: str="", id_keys: Tuple[str,...]=ID_KEYS) -> Dict[str,str]:
-    out: Dict[str,str] = {}
+
+def _flatten(obj: Any, prefix: str = "", id_keys: Tuple[str, ...] = ID_KEYS) -> Dict[str, str]:
+    out: Dict[str, str] = {}
     if isinstance(obj, dict):
         for k in sorted(obj.keys()):
             nk = f"{prefix}.{k}" if prefix else k
@@ -52,25 +56,29 @@ def _flatten(obj: Any, prefix: str="", id_keys: Tuple[str,...]=ID_KEYS) -> Dict[
     out[prefix] = _to_scalar(obj)
     return out
 
-def _rows_for_item(section: str, kind: str, handle: str, before: Dict[str,Any], after: Dict[str,Any]) -> List[FlatRow]:
+
+def _rows_for_item(
+    section: str, kind: str, handle: str, before: Dict[str, Any], after: Dict[str, Any]
+) -> List[FlatRow]:
     a = _flatten(before)
     b = _flatten(after)
-    keys = sorted(set(a.keys())|set(b.keys()))
+    keys = sorted(set(a.keys()) | set(b.keys()))
     rows: List[FlatRow] = []
     for k in keys:
-        va = a.get(k,"")
-        vb = b.get(k,"")
-        status = 0 if va==vb else (1 if va and not vb else (2 if vb and not va else 3))
-        rows.append(FlatRow(section,kind,handle,k,va,vb,status))
+        va = a.get(k, "")
+        vb = b.get(k, "")
+        status = 0 if va == vb else (1 if va and not vb else (2 if vb and not va else 3))
+        rows.append(FlatRow(section, kind, handle, k, va, vb, status))
     return rows
 
-def flatten_preview(preview: Dict[str,List[Dict[str,Any]]]) -> List[FlatRow]:
+
+def flatten_preview(preview: Dict[str, List[Dict[str, Any]]]) -> List[FlatRow]:
     rows: List[FlatRow] = []
-    for sec in ("new","modified","deleted"):
-        for item in preview.get(sec,[]):
+    for sec in ("new", "modified", "deleted"):
+        for item in preview.get(sec, []):
             kind = item["kind"]
             handle = item["handle"]
-            before = item.get("before",{}) or {}
-            after = item.get("after",{}) or {}
-            rows.extend(_rows_for_item(sec,kind,handle,before,after))
+            before = item.get("before", {}) or {}
+            after = item.get("after", {}) or {}
+            rows.extend(_rows_for_item(sec, kind, handle, before, after))
     return rows
