@@ -31,5 +31,5 @@ PROVIDER: Dict[str, Any] = {
     "title": _MARRIAGE_DEF.get("title", "Форма шлюбу"),
     "list_label": _MARRIAGE_DEF.get("list_label") or _MARRIAGE_DEF.get("title", "Форма шлюбу"),
     "form": get_marriage_ui_form,
-    "state_class": FormState,
+    "form_state": FormState,
 }

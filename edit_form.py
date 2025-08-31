@@ -17,11 +17,11 @@ class EditForm(BaseEditForm):
         form_cfg = self._provider["form"]
         return form_cfg() if callable(form_cfg) else form_cfg
 
-    def make_state(self):
-        return self._provider["state_class"]()
+    def make_form_state(self):
+        return self._provider["form_state"]()
 
-    def make_validator(self, state):
-        return self._provider["validator_class"](state)
+    def make_validator(self, form_state):
+        return self._provider["validator_class"](form_state)
 
     def make_ai_builder(self):
         fac = self._provider.get("ai_builder_factory")
@@ -31,5 +31,5 @@ class EditForm(BaseEditForm):
         fac = self._provider.get("reconciler_factory")
         return fac(self.dbstate.db) if fac else None
 
-    def make_processor(self, state):
-        return self._provider["processor_factory"](state, self.dbstate, self.uistate)
+    def make_processor(self, work_context):
+        return self._provider["processor_factory"](work_context, self.dbstate, self.uistate)

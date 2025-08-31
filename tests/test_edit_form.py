@@ -31,8 +31,8 @@ def _install_minimal_env():
             self.state = state
 
     class _Processor:
-        def __init__(self, state, dbstate, uistate):
-            self.state = state
+        def __init__(self, work_context, dbstate, uistate):
+            self.work_context = work_context
             self.db = dbstate
             self.ui = uistate
 
@@ -63,7 +63,7 @@ def _install_minimal_env():
                 "title": "X",
                 "list_label": "X list",
                 "form": _form_fn,
-                "state_class": _State,
+                "form_state": _State,
                 "validator_class": _Validator,
                 "processor_factory": _Processor,
                 "ai_builder_factory": _ai_factory,
@@ -94,7 +94,7 @@ def test_edit_form_provider_hooks():
     cfg = ef.get_form_config()
     assert isinstance(cfg, dict) and cfg.get("id") == "x" and cfg.get("columns") == 2
 
-    st = ef.make_state()
+    st = ef.make_form_state()
     assert getattr(st, "touched", False) is True
 
     v = ef.make_validator(st)
@@ -107,8 +107,10 @@ def test_edit_form_provider_hooks():
     assert calls["ai_builder"] == [dbs.db]
     assert calls["reconciler"] == [dbs.db]
 
+    # Тепер processor очікує WorkContext, але в тесті ми передаємо просто state
+    # Це буде оновлено коли буде реальний WorkContext
     proc = ef.make_processor(st)
-    assert getattr(proc, "state", None) is st and proc.db is dbs and proc.ui is uis
+    assert getattr(proc, "work_context", None) is st and proc.db is dbs and proc.ui is uis
 
 
 def test_edit_form_unknown_id_raises():

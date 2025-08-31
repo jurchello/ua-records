@@ -30,6 +30,7 @@ from lookups.providers import clear_options_cache, set_runtime_db
 from services.geom_prefs import load_pos, save_pos
 from services.id_collector import IdCollector
 from services.state_collector import StateCollector
+from services.work_context import WorkContext
 from settings.settings_manager import get_settings_manager
 from uhelpers.density_helper import get_density_settings
 from ui.data_row import DataRow
@@ -65,7 +66,8 @@ class BaseEditForm(Gtk.Window):
         clear_options_cache()
 
         self.rows: list[DataRow] = []
-        self.state = self.make_state()
+        self.form_state = self.make_form_state()
+        self.work_context = WorkContext()
 
         form_config = self.get_form_config()
         title = form_config.get("title", form_id)
@@ -207,10 +209,10 @@ class BaseEditForm(Gtk.Window):
     def get_form_config(self) -> dict:
         raise NotImplementedError
 
-    def make_state(self):
+    def make_form_state(self):
         raise NotImplementedError
 
-    def make_validator(self, state):
+    def make_validator(self, form_state):
         raise NotImplementedError
 
     def make_ai_builder(self):
@@ -219,7 +221,7 @@ class BaseEditForm(Gtk.Window):
     def get_reconciler(self):
         raise NotImplementedError
 
-    def make_processor(self, state):
+    def make_processor(self, work_context):
         raise NotImplementedError
 
     def _build_gui(self, form_config: dict) -> None:
@@ -477,7 +479,7 @@ class BaseEditForm(Gtk.Window):
         def _resync(*_a):
             try:
                 snap = self.collect_snapshot_dict()
-                self.state.update_from_dict(snap)
+                self.form_state.update_from_dict(snap)
             except Exception:
                 pass
 
@@ -706,7 +708,7 @@ class BaseEditForm(Gtk.Window):
 
         try:
             if getattr(self, "state", None):
-                ids |= IdCollector.collect_from_state(self.state)
+                ids |= IdCollector.collect_from_state(self.form_state)
         except Exception:
             pass
 
@@ -721,7 +723,7 @@ class BaseEditForm(Gtk.Window):
                     ids.add(gid)
 
         try:
-            temp_state = self.make_state()
+            temp_state = self.make_form_state()
             for row in self.rows:
                 StateCollector.collect_row(row, temp_state, allow_log=False)
             ids |= IdCollector.collect_from_state(temp_state)
@@ -767,7 +769,7 @@ class BaseEditForm(Gtk.Window):
         self._reset_form_to_config_defaults()
 
     def _reset_form_to_config_defaults(self) -> None:
-        self.state = self.make_state()
+        self.form_state = self.make_form_state()
         gdk_win = self.get_window()
         if gdk_win:
             gdk_win.freeze_updates()
@@ -780,10 +782,17 @@ class BaseEditForm(Gtk.Window):
             self.queue_draw()
 
     def _on_save(self, _button: Gtk.Button) -> None:
-        self.state = self.make_state()
-        self.state.update_from_dict(self.collect_snapshot_dict())
-        # processor = self.make_processor(self.state)
+        self.work_context.reset()
+        self.form_state = self.make_form_state()
+        self.form_state.update_from_dict(self.collect_snapshot_dict())
+
+        self.work_context.form_state = self.form_state
+        self.work_context.db = self.dbstate.db
+
+        # processor = self.make_processor(self.work_context)
         # processor.run()
+
+        self.work_context.reset()
         # self.destroy()  # Keep window open for testing
 
     def _show_info_dialog(self, title: str, message: str) -> None:
