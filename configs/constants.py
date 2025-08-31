@@ -1,3 +1,4 @@
+"""Configuration constants for the application."""
 DEFAULT_PLACE_ID_1 = "P00323"
 DEFAULT_PLACE_ID_2 = "P00323"
 DEFAULT_PLACE_ID_3 = "P00323"

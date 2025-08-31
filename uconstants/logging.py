@@ -1,3 +1,4 @@
+"""Logging configuration constants and utilities."""
 from __future__ import annotations
 
 import os

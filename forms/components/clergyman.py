@@ -1,4 +1,4 @@
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,line-too-long
 from lookups import man_given, man_surnames
 from configs.constants import CLERGY_OCCUPATIONS, MAN_MILITARY_RANKS
 
@@ -9,6 +9,20 @@ CLERGYMAN_COMPONENT = {
         {
             "title": "Священнослужитель",
             "fields": [
+                {
+                    "id": "{mount}.create_person",
+                    "labels": {
+                        "long": "Створити пусту персону",
+                        "middle": "Ств. пусту перс.",
+                        "short": "Пуста перс.",
+                    },
+                    "type": "checkbox",
+                    "default": False,
+                    "inline_label": True,
+                    "tooltip": "По замовчуванню вимкнено. Якщо увімкнено, персона буде створена навіть за відсутності імен/прізвищ",
+                    "order": {"1": 0.5, "2": 0.5, "3": 0.5, "4": 0.5, "5": 0.5},
+                    "span_rest": True,
+                },
                 {
                     "id": "{mount}.person",
                     "labels": {"long": "Особа", "middle": "Особа", "short": "Особа"},

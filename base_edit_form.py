@@ -30,12 +30,14 @@ from lookups.providers import clear_options_cache, set_runtime_db
 from services.geom_prefs import load_pos, save_pos
 from services.id_collector import IdCollector
 from services.state_collector import StateCollector
+from services.validator_base import ValidatorBase
 from services.work_context import WorkContext
 from settings.settings_manager import get_settings_manager
 from uhelpers.density_helper import get_density_settings
 from ui.data_row import DataRow
 from ui.drag_drop_adapter import DragDropAdapter
 from ui.shared_cache import UI_MODEL_CACHE
+from providers import FORM_REGISTRY
 
 try:
     Gtk.Settings.get_default().set_property("gtk-enable-animations", False)
@@ -132,19 +134,46 @@ class BaseEditForm(Gtk.Window):
         - skip taskbar/pager
         """
 
+        try:
+            mode = get_settings_manager().get_window_mode()
+        except Exception:
+            mode = FORM_WINDOW_MODE or "transient"
+        mode = mode.lower()
+
+        # Set window type hint based on mode
         hint_map = {
             "normal": Gdk.WindowTypeHint.NORMAL,
             "dialog": Gdk.WindowTypeHint.DIALOG,
             "utility": Gdk.WindowTypeHint.UTILITY,
         }
         try:
-            self.set_type_hint(hint_map.get(FORM_WINDOW_TYPE_HINT, Gdk.WindowTypeHint.DIALOG))
+            if mode == "detached":
+                self.set_type_hint(Gdk.WindowTypeHint.NORMAL)
+            else:
+                self.set_type_hint(hint_map.get(FORM_WINDOW_TYPE_HINT, Gdk.WindowTypeHint.DIALOG))
         except Exception:
             pass
 
-        mode = (FORM_WINDOW_MODE or "transient").lower()
+        try:
+            if self.get_modal():
+                self.set_modal(False)
+        except Exception:
+            pass
+
+        try:
+            self.set_transient_for(None)
+        except Exception:
+            pass
+
+        try:
+            self.set_destroy_with_parent(False)
+        except Exception:
+            pass
+
         parent = None
-        if mode in ("transient", "modal"):
+        if mode == "detached":
+            pass
+        elif mode in ("transient", "modal"):
             parent = self._guess_gramps_main_window()
             if parent:
                 try:
@@ -159,7 +188,12 @@ class BaseEditForm(Gtk.Window):
                     pass
 
         try:
-            self.set_keep_above(bool(FORM_WINDOW_KEEP_ABOVE))
+            keep_above = get_settings_manager().get_window_keep_above()
+        except Exception:
+            keep_above = bool(FORM_WINDOW_KEEP_ABOVE)
+
+        try:
+            self.set_keep_above(keep_above)
         except Exception:
             pass
 
@@ -286,6 +320,7 @@ class BaseEditForm(Gtk.Window):
         main_vbox.pack_start(buttons_box, False, False, 0)
 
         self.add(main_vbox)
+        self._apply_window_behavior()
         self.show_all()
         self._enable_live_sync()
 
@@ -593,21 +628,18 @@ class BaseEditForm(Gtk.Window):
                 pass
 
     def _infer_prefix(self, frame_config: dict, tab_config: dict, f_idx: int) -> str:
-
-        def _head_from_model_path(mp: str) -> str | None:
-            if not isinstance(mp, str) or "." not in mp:
-                return None
-            parts = mp.split(".")
-            return parts[0]
+        def _head_from_id(s: str) -> str | None:
+            if isinstance(s, str) and "." in s:
+                return s.split(".", 1)[0]
+            return None
 
         for fld in frame_config.get("fields", []):
             t = fld.get("type")
-            mp = fld.get("model_path")
-            if t in {"entry", "person", "place", "citation"} and isinstance(mp, str):
-                head = _head_from_model_path(mp)
+            fid = fld.get("id")
+            if t in {"entry", "person", "place", "citation", "checkbox", "check"}:
+                head = _head_from_id(fid)
                 if head:
                     return head
-
         tab_id = tab_config.get("id", "tab")
         return f"{tab_id}_{f_idx+1}"
 
@@ -788,12 +820,41 @@ class BaseEditForm(Gtk.Window):
 
         self.work_context.form_state = self.form_state
         self.work_context.db = self.dbstate.db
+        if not self._run_validation_via_provider():
+            return
 
         # processor = self.make_processor(self.work_context)
         # processor.run()
 
         self.work_context.reset()
         # self.destroy()  # Keep window open for testing
+
+    def _run_validation_via_provider(self) -> bool:
+        try:
+            prov = FORM_REGISTRY.get(self.form_id)
+            if not prov:
+                self._show_info_dialog("Помилка", f"Провайдер для форми '{self.form_id}' не знайдено")
+                return False
+
+            validator = prov.get("validator")
+            if not validator:
+                return True  # Немає валідатора - пропускаємо перевірки
+
+            validator = validator(self.work_context)
+            issues = validator.validate()
+
+            if issues:
+                validator.show_errors(self)
+                return False
+            return True
+        except Exception as e:
+            try:
+                tmp = ValidatorBase(self.work_context)
+                tmp.add("", f"Помилка валідації: {e}")
+                tmp.show_errors(self)
+            except Exception:
+                pass
+            return False
 
     def _show_info_dialog(self, title: str, message: str) -> None:
         dialog = Gtk.MessageDialog(
@@ -870,7 +931,7 @@ class BaseEditForm(Gtk.Window):
         return False
 
     def collect_snapshot_dict(self) -> dict:
-        temp_state = self.make_state()
+        temp_state = self.make_form_state()
         for row in self.rows:
             StateCollector.collect_row(row, temp_state, allow_log=False)
         return temp_state.to_dict()

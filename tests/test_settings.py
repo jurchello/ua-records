@@ -70,9 +70,14 @@ def _install_minimal_stubs(tmp_path: Path) -> None:
         def __init__(self, label, value, _min=0, _max=9999):
             super().__init__(label, int(value))
 
+    class BooleanOption(_BaseOption):
+        def __init__(self, label, value):
+            super().__init__(label, bool(value))
+
     setattr(menu_mod, "EnumeratedListOption", EnumeratedListOption)
     setattr(menu_mod, "StringOption", StringOption)
     setattr(menu_mod, "NumberOption", NumberOption)
+    setattr(menu_mod, "BooleanOption", BooleanOption)
     sys.modules["gramps.gen.plug.menu"] = menu_mod
 
     gram_mod = types.ModuleType("gramps.gen.plug._gramplet")
@@ -179,6 +184,9 @@ def _install_minimal_stubs(tmp_path: Path) -> None:
             self._death = 3
             self._marriage = 3
             self._density = "compact"
+            self._tab_density = "normal"
+            self._window_mode = "transient"
+            self._window_keep_above = False
             self._person_len = 30
             self._place_len = 30
             self._citation_len = 30
@@ -243,6 +251,24 @@ def _install_minimal_stubs(tmp_path: Path) -> None:
         def set_citation_text_length(self, v):
             self._citation_len = int(v)
 
+        def get_tab_density(self):
+            return self._tab_density
+
+        def set_tab_density(self, v):
+            self._tab_density = v
+
+        def get_window_mode(self):
+            return self._window_mode
+
+        def set_window_mode(self, v):
+            self._window_mode = v
+
+        def get_window_keep_above(self):
+            return self._window_keep_above
+
+        def set_window_keep_above(self, v):
+            self._window_keep_above = bool(v)
+
     _singleton = SettingsManager()
 
     def get_settings_manager():
@@ -268,6 +294,9 @@ def _install_minimal_stubs(tmp_path: Path) -> None:
             opts.append(_menu.NumberOption("death_columns", self.m.get_death_columns()))
             opts.append(_menu.NumberOption("marriage_columns", self.m.get_marriage_columns()))
             opts.append(_menu.EnumeratedListOption("density", self.m.get_form_density()))
+            opts.append(_menu.EnumeratedListOption("tab_density", self.m.get_tab_density()))
+            opts.append(_menu.EnumeratedListOption("window_mode", self.m.get_window_mode()))
+            opts.append(_menu.BooleanOption("window_keep_above", self.m.get_window_keep_above()))
             opts.append(_menu.NumberOption("person_name_length", self.m.get_person_name_length()))
             opts.append(_menu.NumberOption("place_title_length", self.m.get_place_title_length()))
             opts.append(_menu.NumberOption("citation_text_length", self.m.get_citation_text_length()))
@@ -295,12 +324,15 @@ def test_gramplet_save_roundtrip(monkeypatch, fake_env):
 
     g = fg.UARecords(DummyGui())
     g.build_options()
-    # Should have at least 10 options, possibly 11 with tab density
-    assert len(g.opts_cache) >= 10
+    # Should have 13 options with all new window settings
+    assert len(g.opts_cache) == 13
 
     assert g.opts_cache[0].get_value() == "disabled"
     assert g.opts_cache[3].get_value() == 3
     assert g.opts_cache[6].get_value() == "compact"
+    assert g.opts_cache[7].get_value() == "normal"  # tab_density
+    assert g.opts_cache[8].get_value() == "transient"  # window_mode
+    assert g.opts_cache[9].get_value() == False  # window_keep_above
 
     g.opts_cache[0].set_value("openai")
     g.opts_cache[1].set_value("gpt-4o-mini")
@@ -309,18 +341,12 @@ def test_gramplet_save_roundtrip(monkeypatch, fake_env):
     g.opts_cache[4].set_value(2)
     g.opts_cache[5].set_value(5)
     g.opts_cache[6].set_value("normal")
-    
-    # Handle both 10 and 11 option cases
-    if len(g.opts_cache) >= 11:
-        g.opts_cache[7].set_value("spacious")  # tab density if present
-        g.opts_cache[8].set_value(42)
-        g.opts_cache[9].set_value(55)
-        g.opts_cache[10].set_value(60)
-    else:
-        # Old format with 10 options
-        g.opts_cache[7].set_value(42)
-        g.opts_cache[8].set_value(55)
-        g.opts_cache[9].set_value(60)
+    g.opts_cache[7].set_value("spacious")  # tab_density
+    g.opts_cache[8].set_value("modal")  # window_mode
+    g.opts_cache[9].set_value(True)  # window_keep_above
+    g.opts_cache[10].set_value(42)  # person_name_length
+    g.opts_cache[11].set_value(55)  # place_title_length
+    g.opts_cache[12].set_value(60)  # citation_text_length
 
     monkeypatch.setattr(fg.UARecords, "_refresh_open_forms", lambda self: None, raising=True)
     g.save_options()
@@ -332,11 +358,9 @@ def test_gramplet_save_roundtrip(monkeypatch, fake_env):
     assert cfg.get_death_columns() == 2
     assert cfg.get_marriage_columns() == 5
     assert cfg.get_form_density() == "normal"
-    
-    # Check tab density only if it was set (11 options case)
-    if len(g.opts_cache) >= 11:
-        assert cfg.get_tab_density() == "spacious"
-    
+    assert cfg.get_tab_density() == "spacious"
+    assert cfg.get_window_mode() == "modal"
+    assert cfg.get_window_keep_above() == True
     assert cfg.get_person_name_length() == 42
     assert cfg.get_place_title_length() == 55
     assert cfg.get_citation_text_length() == 60

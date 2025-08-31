@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import re
 from typing import Any, Dict, List, Tuple
 
 import gi
@@ -9,6 +11,7 @@ gi.require_version("Gdk", "3.0")  # pylint: disable=wrong-import-position
 gi.require_version("Pango", "1.0")  # pylint: disable=wrong-import-position
 
 from gi.repository import Gdk, GLib, Gtk, Pango
+from gi.repository import GdkPixbuf
 from gramps.gen.display.name import displayer as name_displayer
 from gramps.gen.display.place import displayer as place_displayer
 from gramps.gen.errors import WindowActiveError
@@ -56,6 +59,7 @@ class FieldRenderer:
         self.model_manager = model_manager
         self._toplevel = toplevel
         self._checkbox_css_provider = None
+        self._help_css_provider = None
         self.labels: Dict[str, Gtk.Label] = {}
         self.label_boxes: Dict[str, Gtk.Widget] = {}
         self.widgets = widgets
@@ -215,6 +219,187 @@ class FieldRenderer:
 
         return col + 1
 
+    def _ensure_help_css(self) -> None:
+        if getattr(self, "_help_css_provider", None):
+            return
+        css = b"""
+        .help-btn {
+            padding: 0;
+            border-width: 0;
+        }
+        """
+        provider = Gtk.CssProvider()
+        provider.load_from_data(css)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER,
+        )
+        self._help_css_provider = provider
+
+    def _attach_help(self, widget: Gtk.Widget, field: Dict[str, str], label_text: str) -> Gtk.Widget:
+        help_text = field.get("help") or field.get("help_text") or ""
+        if not isinstance(help_text, str) or not help_text.strip():
+            return widget
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        box.set_hexpand(widget.get_hexpand())
+        box.set_halign(Gtk.Align.FILL)
+
+        # Keep widget expanding
+        widget.set_hexpand(True)
+        box.pack_start(widget, True, True, 0)
+        self._ensure_help_css()
+
+        # load original pixbuf once (no scaling yet)
+        orig_pix = GdkPixbuf.Pixbuf.new_from_file(os.path.join(os.path.dirname(__file__), "assets", "help.png"))
+
+        img = Gtk.Image()  # will set scaled pixbuf later
+
+        btn = Gtk.Button()
+        btn.set_image(img)
+        btn.set_relief(Gtk.ReliefStyle.NONE)
+        btn.set_focus_on_click(False)
+        btn.set_tooltip_text("Help")
+        btn.get_style_context().add_class("help-btn")
+
+        # no fixed size; we will scale to parent container height
+        btn.set_halign(Gtk.Align.CENTER)
+        btn.set_valign(Gtk.Align.CENTER)
+        btn.set_margin_start(4)
+
+        def _scale_icon_to_alloc(_box_widget, allocation):
+            try:
+                # target size ~60% of row height, with bounds
+                target = max(16, min(48, int(allocation.height * 0.6)))
+                if target <= 0:
+                    return
+                scaled = orig_pix.scale_simple(target, target, GdkPixbuf.InterpType.BILINEAR)
+                img.set_from_pixbuf(scaled)
+                # keep button slightly larger than image so it doesn't clip
+                btn.set_size_request(target + 4, target + 4)
+            except Exception:
+                pass
+
+        # react to size changes of the HBox that contains the field and the help button
+        def _on_size_allocate(widget, allocation):
+            _scale_icon_to_alloc(widget, allocation)
+        box.connect("size-allocate", _on_size_allocate)
+
+        btn = Gtk.Button()
+        btn.set_image(img)
+        btn.set_relief(Gtk.ReliefStyle.NONE)
+        btn.set_focus_on_click(False)
+        btn.set_tooltip_text("Help")
+        btn.set_size_request(20, 20)
+        btn.set_halign(Gtk.Align.CENTER)
+        btn.set_valign(Gtk.Align.CENTER)
+        btn.set_margin_top(0)
+        btn.set_margin_bottom(0)
+        btn.set_margin_start(0)
+        btn.set_margin_end(0)
+        btn.get_style_context().add_class("help-btn")
+
+        def _open_help(_btn):
+            title = label_text or (field.get("id") or "Help")
+            self._show_help_dialog(title, help_text)
+
+        btn.connect("clicked", _open_help)
+        box.pack_start(btn, False, False, 0)
+        return box
+
+    def _show_help_dialog(self, title: str, help_text: str) -> None:
+        dlg = Gtk.Dialog(
+            title=title,
+            transient_for=self._toplevel.get_toplevel() if self._toplevel else None,
+            flags=0,
+        )
+        dlg.add_button("OK", Gtk.ResponseType.OK)
+        dlg.set_modal(True)
+        dlg.set_destroy_with_parent(True)
+        dlg.set_default_response(Gtk.ResponseType.OK)
+        dlg.set_resizable(True)
+        try:
+            dlg.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        except Exception:
+            pass
+
+        content = dlg.get_content_area()
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_width(480)
+        scrolled.set_min_content_height(320)
+
+        lbl = Gtk.Label()
+        lbl.set_use_markup(True)
+        lbl.set_line_wrap(True)
+        lbl.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        lbl.set_xalign(0.0)
+        lbl.set_halign(Gtk.Align.FILL)
+        lbl.set_selectable(True)
+        lbl.set_margin_top(8)
+        lbl.set_margin_bottom(8)
+        lbl.set_margin_start(8)
+        lbl.set_margin_end(8)
+
+        markup = self._render_help_markup(help_text)
+        try:
+            lbl.set_markup(markup)
+        except Exception:
+            lbl.set_text(help_text)
+
+        scrolled.add(lbl)
+        content.add(scrolled)
+        content.show_all()
+
+        # Close on focus-out (click outside)
+        def _close_on_focus_out(_w, _e):
+            try:
+                dlg.destroy()
+            except Exception:
+                pass
+            return False
+
+        dlg.connect("focus-out-event", _close_on_focus_out)
+
+        dlg.connect("response", lambda d, r: d.destroy())
+        dlg.show_all()
+
+    def _render_help_markup(self, text: str) -> str:
+        # Lightweight markdown-like to Pango markup
+        s = text or ""
+        # Escape
+        s = GLib.markup_escape_text(s)
+
+        # Bold: **...**
+        s = s.replace("&ast;&ast;", "**")  # undo escape for asterisks if any
+        try:
+            s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
+            # Italic: *...*
+            s = re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"<i>\1</i>", s)
+            # Underline: __...__
+            s = re.sub(r"__(.+?)__", r"<u>\1</u>", s)
+        except Exception:
+            pass
+
+        # Lists: lines starting with - or *
+        lines = s.splitlines()
+        out = []
+        for ln in lines:
+            stripped = ln.lstrip()
+            if stripped.startswith("- ") or stripped.startswith("* "):
+                out.append("• " + stripped[2:])
+            else:
+                out.append(ln)
+        s = "\n".join(out)
+
+        # Paragraphs: double newlines -> extra spacing (use simple <span> + newline)
+        paragraphs = s.split("\n\n")
+        paragraphs = [p.strip() for p in paragraphs]
+        s = "\n\n".join(paragraphs)
+
+        return s
+
     def _render_field(
         self,
         *,
@@ -239,44 +424,47 @@ class FieldRenderer:
         is_checkbox = field_type in ("check", "checkbox")
         inline_checkbox = is_checkbox and bool(field.get("inline_label", True))
 
-        if inline_checkbox:
-            widget = self._create_check_widget(field, inline_label=True)
-            self.widgets[field_id] = widget
-            meta = self._field_specs.get(field_id, {})
-            meta["_creation_index"] = self._creation_index
-            self._creation_index += 1
-            pair_span = (frame_pairs - col) if field.get("span_rest") else 1
-            row_grid.attach(widget, col * 2, row, 2 * pair_span, 1)
-            widget.show()  # Show inline checkbox
-            return sub_pairs if field.get("span_rest") else (col + pair_span)
-
-        allow_wrap = field_type in ("check", "checkbox")
+        # Build label box (also for inline checkboxes so reflow works)
+        allow_wrap = is_checkbox  # allow wrapping text for checkboxes in label if needed
         label_box, label_widget = self._build_label_box(
-            label_text, background_color, allow_wrap=allow_wrap, tooltip_text=tooltip_text
+            "" if inline_checkbox else label_text,
+            background_color,
+            allow_wrap=allow_wrap,
+            tooltip_text=(None if inline_checkbox else tooltip_text),
         )
-        self.labels[field_id] = label_widget
+        self.labels[field_id] = label_widget if not inline_checkbox else Gtk.Label()  # placeholder for inline
+        self.label_boxes[field_id] = label_box
         meta = self._field_specs.get(field_id, {})
         meta["_creation_index"] = self._creation_index
         self._creation_index += 1
-        self.label_boxes[field_id] = label_box
         row_grid.attach(label_box, col * 2, row, 1, 1)
         if self._frame_pairs > 1 and col < len(label_size_groups):
             label_size_groups[col].add_widget(label_widget)
 
-        widget = None
-        try:
-            widget = self._create_widget_for_field(field, field_type, background_color)
-        except Exception:
-            pass
+        # Create the actual widget
+        if is_checkbox:
+            # For inline checkboxes, the checkbutton carries the visible text
+            if inline_checkbox:
+                check_label, _ = self._label_for_field(field, field_id)
+                widget = self._create_check_widget({**field, "label": check_label}, inline_label=True)
+            else:
+                widget = self._create_check_widget(field, inline_label=False)
+        else:
+            try:
+                widget = self._create_widget_for_field(field, field_type, background_color)
+            except Exception:
+                widget = None
 
         if widget is None:
             widget = Gtk.Label(label=f"[unsupported: {field_type}]")
             self.types[field_id] = f"unknown({field_type})"
 
-        span_rest = bool(field.get("span_rest"))
+        # Wrap widget with help button if help/help_text present
+        widget = self._attach_help(widget, field, label_text)
 
+        span_rest = bool(field.get("span_rest"))
         widget.set_halign(Gtk.Align.FILL)
-        widget.set_hexpand(span_rest)  # Тільки span_rest EventBox розтягуються
+        widget.set_hexpand(span_rest)
         self.widgets[field_id] = widget
         widget_span = self._calc_widget_span(span_rest, col, frame_pairs)
         row_grid.attach(widget, col * 2 + 1, row, widget_span, 1)
@@ -284,7 +472,7 @@ class FieldRenderer:
         if (not span_rest) and col < len(widget_size_groups):
             widget_size_groups[col].add_widget(widget)
 
-        # Show widgets and labels by default - ConditionManager will hide them if needed
+        # Show by default — ConditionManager may hide later
         label_box.show()
         widget.show()
 
@@ -802,15 +990,20 @@ class FieldRenderer:
                 max_chars = int(field.get("max_label_chars", 0) or 0)
                 if max_chars > 0:
                     lbl.set_max_width_chars(max_chars)
+            if not field.get("label"):
+                txt, _ = self._label_for_field(field, field.get("id", ""))
+                chk.set_label(txt or "")
 
         raw_default = field.get("default", False)
         default_bool = parse_bool_from_string(raw_default)
         chk.set_active(default_bool)
-
         self.defaults[field["id"]] = default_bool
 
-        if "tooltip" in field:
-            chk.set_tooltip_text(str(field["tooltip"]))
+        tip = field.get("tooltip")
+        if not tip and isinstance(field.get("labels"), dict):
+            tip = field["labels"].get("long")
+        if tip:
+            chk.set_tooltip_text(str(tip))
 
         return chk
 

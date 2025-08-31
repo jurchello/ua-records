@@ -31,33 +31,27 @@ class StateCollector:
 
     @staticmethod
     def collect_row(row: "DataRow", state: "FormStateBase", allow_log: bool = True) -> None:
+        def _prefix_and_key(field_id: str) -> tuple[str, str]:
+            raw = StateCollector._extract_raw_key(field_id, row.prefix or "")
+            if isinstance(raw, str) and "." in raw:
+                head, tail = raw.split(".", 1)
+                return head, tail
+            return (row.prefix or "", raw)
+
         for field_id, container in row.widgets.items():
             if StateCollector._is_spacer_field(field_id):
                 continue
-
             value = StateCollector._value_from_widget(container)
             if value is None:
                 continue
-
-            field_spec = getattr(row, "_field_specs", {}).get(field_id, {})
-            model_path = field_spec.get("model_path")
-
-            if model_path and isinstance(model_path, str) and "." in model_path:
-                prefix, key = model_path.split(".", 1)
-            else:
-                prefix = row.prefix
-                key = StateCollector._extract_raw_key(field_id, row.prefix)
-
+            prefix, key = _prefix_and_key(field_id)
             state.set(prefix=prefix, key=key, value=value, allow_log=allow_log)
-
         obj_keys = set(row.handles.keys()) | set(row.objects.keys())
         for field_id in obj_keys:
             if StateCollector._is_spacer_field(field_id):
                 continue
-
             handle = row.handles.get(field_id)
             obj = row.objects.get(field_id)
-
             if obj is None and handle:
                 ftype = row.types.get(field_id)
                 try:
@@ -69,37 +63,25 @@ class StateCollector:
                         obj = row.dbstate.db.get_citation_from_handle(handle)
                 except Exception:
                     obj = None
-
             if not handle and obj is None:
                 continue
-
-            field_spec = getattr(row, "_field_specs", {}).get(field_id, {})
-            model_path = field_spec.get("model_path")
-
-            if model_path and isinstance(model_path, str) and "." in model_path:
-                prefix, key = model_path.split(".", 1)
-            else:
-                prefix = row.prefix
-                key = StateCollector._extract_raw_key(field_id, row.prefix)
-
-            payload = {"handle": handle} if handle else {}
+            prefix, key = _prefix_and_key(field_id)
+            payload = {}
+            if handle:
+                payload["handle"] = handle
             if obj is not None:
                 payload["object"] = obj
-
             state.set(prefix=prefix, key=key, value=payload, allow_log=allow_log)
 
     # -------- helpers --------
 
     @staticmethod
-    def _prefix_and_key_from_spec_or_id(row: "DataRow", spec: dict, field_id: str) -> tuple[str, str]:
-        model_path = spec.get("model_path")
-        if isinstance(model_path, str) and "." in model_path:
-            head, tail = model_path.split(".", 1)
+    def _prefix_and_key_from_spec_or_id(row: "DataRow", _spec: dict, field_id: str) -> tuple[str, str]:
+        raw = StateCollector._extract_raw_key(field_id, row.prefix or "")
+        if isinstance(raw, str) and "." in raw:
+            head, tail = raw.split(".", 1)
             return head, tail
-
-        prefix = row.prefix or ""
-        key = StateCollector._extract_raw_key(field_id, prefix)
-        return prefix, key
+        return (row.prefix or "", raw)
 
     @staticmethod
     def _extract_raw_key(field_id: str, prefix: str | None) -> str:

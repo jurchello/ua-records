@@ -87,8 +87,13 @@ class FormStateBase:
         except KeyError:
             return None
 
-    def get_object(self, prefix: str, key: str) -> Person | Place | Citation | None:
-        from gramps.gen.lib import Citation, Person, Place  # pylint: disable=import-outside-toplevel
+    def get_object(self, prefix: str, key: str) -> Any:
+        try:
+            from gramps.gen.lib import Citation, Person, Place  # pylint: disable=import-outside-toplevel
+            valid_types = (Person, Place, Citation)
+        except ImportError:
+            # For tests or when gramps is not available
+            valid_types = (object,)
 
         try:
             value = self._resolve_value(prefix, key)
@@ -97,11 +102,11 @@ class FormStateBase:
 
         if isinstance(value, dict) and "object" in value:
             obj = value.get("object")
-            if isinstance(obj, (Person, Place, Citation)):
+            if isinstance(obj, valid_types):
                 return obj
             return None
 
-        if isinstance(value, (Person, Place, Citation)):
+        if isinstance(value, valid_types):
             return value
         return None
 

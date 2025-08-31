@@ -4,6 +4,7 @@ from typing import Any, Dict, Mapping, cast
 
 from forms.forms.marriage.config import FORM_EXPANDED
 from forms.forms.marriage.form_state import FormState
+from forms.forms.marriage.validator import MarriageValidator
 
 
 def get_marriage_columns() -> int:
@@ -32,4 +33,5 @@ PROVIDER: Dict[str, Any] = {
     "list_label": _MARRIAGE_DEF.get("list_label") or _MARRIAGE_DEF.get("title", "Форма шлюбу"),
     "form": get_marriage_ui_form,
     "form_state": FormState,
+    "validator": MarriageValidator,
 }

@@ -39,6 +39,8 @@ class SettingsManager:
         self.config.register("form.person_name_length", 30)
         self.config.register("form.place_title_length", 30)
         self.config.register("form.citation_text_length", 30)
+        self.config.register("form.window_mode", "transient")
+        self.config.register("form.window_keep_above", False)
 
         self.config.load()
 
@@ -128,6 +130,22 @@ class SettingsManager:
 
     def set_citation_text_length(self, v: int) -> None:
         self.config.set("form.citation_text_length", int(v))
+        self.save()
+
+    def get_window_mode(self) -> str:
+        v = self.config.get("form.window_mode")
+        return str(v) if v else "transient"
+
+    def set_window_mode(self, value: str) -> None:
+        self.config.set("form.window_mode", value)
+        self.save()
+
+    def get_window_keep_above(self) -> bool:
+        v = self.config.get("form.window_keep_above")
+        return bool(v) if v is not None else False
+
+    def set_window_keep_above(self, value: bool) -> None:
+        self.config.set("form.window_keep_above", bool(value))
         self.save()
 
     def add_change_callback(self, cb: Callable[[], None]) -> None:

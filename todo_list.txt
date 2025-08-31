@@ -1,0 +1,187 @@
+дякую за логи — усе зрозуміло. Коротко:
+
+get_object() повертає None, бо всередині робить isinstance(..., (Person, Place, Citation)). Ваші Mock()-об’єкти не пройдуть цю перевірку → валідатор думає, що цитати/місця немає.
+
+У інтеграційному тесті ви дали UI-id без крапок (subject_person_original_name), тоді як збирач очікує «UI key = <prefix>_<full.dotted.id>», напр. groom_box_groom_box.subject_person.original_name.
+
+FORM_REGISTRY["marriage"] може бути порожнім або мати інший ключ (id береться з конфіга). Тест краще шукати провайдера за класом валідатора.
+
+Нижче мінімальні правки, які закривають усі 3 фейли.
+
+1) Загальний стаб для типів Gramps (щоб get_object() працював)
+
+Створіть tests/conftest.py (або додайте в нього) автouse-фікстуру і утиліту для формування UI-id:
+
+# tests/conftest.py
+from __future__ import annotations
+import sys, types
+import pytest
+
+@pytest.fixture(autouse=True)
+def stub_gramps_lib():
+    """Підміняємо gramps.gen.lib простими класами з потрібними методами."""
+    lib = types.SimpleNamespace()
+
+    class Person:
+        def __init__(self, h="person123", gid="I0001"):
+            self._h, self._gid = h, gid
+        def get_handle(self): return self._h
+        def get_gramps_id(self): return self._gid
+
+    class Place:
+        def __init__(self, h="place456", gid="P0001"):
+            self._h, self._gid = h, gid
+        def get_handle(self): return self._h
+        def get_gramps_id(self): return self._gid
+
+    class Citation:
+        def __init__(self, h="cite789", gid="C0001"):
+            self._h, self._gid = h, gid
+        def get_handle(self): return self._h
+        def get_gramps_id(self): return self._gid
+
+    lib.Person, lib.Place, lib.Citation = Person, Place, Citation
+    sys.modules.setdefault("gramps", types.ModuleType("gramps"))
+    sys.modules.setdefault("gramps.gen", types.ModuleType("gramps.gen"))
+    sys.modules["gramps.gen.lib"] = lib
+    yield
+
+def ui_ids(prefix: str, mapping: dict[str, object]) -> dict[str, object]:
+    """Перетворює 'groom_box.subject_person.person' → 'groom_box_groom_box.subject_person.person'."""
+    return {f"{prefix}_{k}": v for k, v in mapping.items()}
+
+2) Тест провайдера — не хардкодимо ключ "marriage"
+
+Замініть у tests/test_marriage_validation.py:
+
+from providers import FORM_REGISTRY
+prov = FORM_REGISTRY.get("marriage")
+assert prov is not None
+
+
+на:
+
+from providers import FORM_REGISTRY
+from forms.forms.marriage.validator import MarriageValidator
+
+prov = next((p for p in FORM_REGISTRY.values() if p.get("validator") is MarriageValidator), None)
+assert prov is not None, f"Available providers: {list(FORM_REGISTRY.keys())}"
+
+3) Інтеграційний флоу: правильні UI-id + справжні (стабові) типи
+
+У tests/test_validation_flow_integration.py:
+
+Фікстуру mock_gramps_objects зробіть з інстансів наших стаб-класів:
+
+# заміна mock_gramps_objects
+from importlib import import_module
+import pytest
+
+@pytest.fixture
+def mock_gramps_objects():
+    lib = import_module("gramps.gen.lib")
+    return {
+        "person":   lib.Person("person123", "I0001"),
+        "place":    lib.Place("place456", "P0001"),
+        "citation": lib.Citation("cite789", "C0001"),
+    }
+
+
+Для створення рядків передавайте повні крапкові id і завертайте їх через ui_ids(...):
+
+from importlib import import_module
+from tests.conftest import ui_ids  # утиліта з п.1
+
+# ... усередині тесту ...
+
+# Common row (DnD об’єкти)
+common_row = create_realistic_data_row(
+    prefix="common_box",
+    widgets=ui_ids("common_box", {
+        "common_box.tags_for_new_people": mock_gtk_widgets["Entry"]("test,tag"),
+    }),
+    objects=ui_ids("common_box", {
+        "common_box.citation":       mock_gramps_objects["citation"],
+        "common_box.marriage_place": mock_gramps_objects["place"],
+    }),
+    handles=ui_ids("common_box", {
+        "common_box.citation":       "cite789",
+        "common_box.marriage_place": "place456",
+    }),
+)
+
+# Groom row
+groom_row = create_realistic_data_row(
+    prefix="groom_box",
+    widgets=ui_ids("groom_box", {
+        "groom_box.subject_person.original_name":       mock_gtk_widgets["Entry"]("Іван"),
+        "groom_box.subject_person.normalized_name":     mock_gtk_widgets["Entry"]("Іван"),
+        "groom_box.subject_person.original_surname":    mock_gtk_widgets["Entry"]("Петренко"),
+        "groom_box.subject_person.normalized_surname":  mock_gtk_widgets["Entry"]("Петренко"),
+        "groom_box.subject_person.gender":              mock_gtk_widgets["ComboBoxText"]("Чоловік"),
+        "groom_box.subject_person.age":                 mock_gtk_widgets["Entry"]("25"),
+    }),
+    objects=ui_ids("groom_box", {
+        "groom_box.subject_person.person": mock_gramps_objects["person"],
+    }),
+    handles=ui_ids("groom_box", {
+        "groom_box.subject_person.person": "person123",
+    }),
+)
+
+# Bride row
+lib = import_module("gramps.gen.lib")
+bride_person = lib.Person("bride456", "I0002")
+
+bride_row = create_realistic_data_row(
+    prefix="bride_box",
+    widgets=ui_ids("bride_box", {
+        "bride_box.subject_person.original_name":       mock_gtk_widgets["Entry"]("Марія"),
+        "bride_box.subject_person.normalized_name":     mock_gtk_widgets["Entry"]("Марія"),
+        "bride_box.subject_person.original_surname":    mock_gtk_widgets["Entry"]("Іванівна"),
+        "bride_box.subject_person.normalized_surname":  mock_gtk_widgets["Entry"]("Іванівна"),
+        "bride_box.subject_person.gender":              mock_gtk_widgets["ComboBoxText"]("Жінка"),
+        "bride_box.subject_person.age":                 mock_gtk_widgets["Entry"]("22"),
+    }),
+    objects=ui_ids("bride_box", {
+        "bride_box.subject_person.person": bride_person,
+    }),
+    handles=ui_ids("bride_box", {
+        "bride_box.subject_person.person": "bride456",
+    }),
+)
+
+
+І виправте гетери на крапкові ключі:
+
+citation = form_state.get_object("common_box", "citation")
+place    = form_state.get_object("common_box", "marriage_place")
+groom_person = form_state.get_object("groom_box", "subject_person.person")
+bride_person_obj = form_state.get_object("bride_box", "subject_person.person")
+
+groom_name   = form_state.get("groom_box", "subject_person.original_name")
+bride_name   = form_state.get("bride_box", "subject_person.original_name")
+groom_surname = form_state.get("groom_box", "subject_person.original_surname")
+bride_surname = form_state.get("bride_box", "subject_person.original_surname")
+
+4) tests/test_validation_integration.py
+
+Тут теж не використовуйте Mock() для особи — візьміть стаб:
+
+from importlib import import_module
+
+# ...
+lib = import_module("gramps.gen.lib")
+bride_person = lib.Person("bride123", "I0002")  # замість Mock()
+form_state.set("bride_box", "subject_person.person", bride_person, allow_log=True)
+
+
+Після цих змін:
+
+get_object(...) почне повертати «персону/місце/цитату» (наші стабові класи).
+
+Збирання StateCollector працюватиме (бо UI-id тепер у форматі <prefix>_<full.dotted.id>).
+
+Тест провайдера не зламається, якщо id у реєстрі відрізняється від "marriage".
+
+Спробуй запустити тести ще раз — має бути зелено. Якщо щось ще впаде, скинь трейс; підправимо точково.

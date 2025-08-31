@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from gramps.gen.plug.menu import EnumeratedListOption, NumberOption, StringOption
+from gramps.gen.plug.menu import BooleanOption, EnumeratedListOption, NumberOption, StringOption
 
 if TYPE_CHECKING:
     from gramps.gen.plug.menu import MenuOption
@@ -29,6 +29,9 @@ class SettingsUI:
 
         self._add_density()
         self._add_tab_density()
+
+        self._add_window_mode()
+        self._add_window_keep_above()
 
         self._add_person_len()
         self._add_place_len()
@@ -100,6 +103,19 @@ class SettingsUI:
     def _add_citation_len(self) -> None:
         o = NumberOption("Довжина тексту цитат", self.cfg.get_citation_text_length(), 10, 100)
         o.set_help("10–100 символів")
+        self.opts.append(o)
+
+    def _add_window_mode(self) -> None:
+        o = EnumeratedListOption("Режим вікна", self.cfg.get_window_mode())
+        o.add_item("detached", "Незалежне (окремо від Gramps)")
+        o.add_item("transient", "Прив'язане до Gramps")
+        o.add_item("modal", "Модальне (блокує Gramps)")
+        o.set_help("Як форма поводиться відносно головного вікна Gramps")
+        self.opts.append(o)
+
+    def _add_window_keep_above(self) -> None:
+        o = BooleanOption("Завжди поверх інших вікон", self.cfg.get_window_keep_above())
+        o.set_help("Тримати вікно форми поверх всіх інших вікон")
         self.opts.append(o)
 
     def add_multiselect_option(self, title: str, selected: list[str], choices: list[tuple[str, str]]) -> None:

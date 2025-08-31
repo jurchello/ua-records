@@ -21,7 +21,7 @@ class EditForm(BaseEditForm):
         return self._provider["form_state"]()
 
     def make_validator(self, form_state):
-        return self._provider["validator_class"](form_state)
+        return self._provider["validator"](form_state)
 
     def make_ai_builder(self):
         fac = self._provider.get("ai_builder_factory")

@@ -6,7 +6,7 @@ from configs.constants import (
     NEW_PERSON_TAGS,
     EXISTING_PERSON_TAGS,
     NEW_EVENT_TAGS,
-    NEW_CITATION_TAGS
+    NEW_CITATION_TAGS,
 )
 
 from forms.components import COMPONENTS_REGISTRY

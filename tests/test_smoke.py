@@ -183,7 +183,7 @@ def test_formgramplet_build_gui(monkeypatch, fake_env):
 
     from UARecords import UARecords
 
-    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gtk", "3.0") # pylint: disable=wrong-import-position
     from gi.repository import Gtk  # type: ignore
 
     def mock_build_gui(self):

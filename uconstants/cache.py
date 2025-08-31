@@ -1,3 +1,4 @@
+"""Cache configuration constants."""
 DEFAULT_TTL_SEC_LISTS = 24 * 3600
 DEFAULT_TTL_SEC_FORMSTATE = 3600
 

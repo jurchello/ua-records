@@ -28,7 +28,7 @@ def apply_ops(
             continue
         if k not in out:
             out[k] = {}
-        if op.path == "" and isinstance(op.after, dict):
+        if not op.path and isinstance(op.after, dict):
             out[k] = deepcopy(op.after)
         elif op.path:
             set_at_path(out[k], op.path, op.after)

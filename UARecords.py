@@ -100,9 +100,17 @@ class UARecords(Gramplet):
 
         self.settings_manager.set_form_density(opts[6].get_value())
 
-        # Handle both 10 and 11 option cases
-        if len(opts) >= 11:
-            # New format with tab density
+        # Handle different formats based on number of options
+        if len(opts) >= 13:
+            # New format with tab density and window settings
+            self.settings_manager.set_tab_density(opts[7].get_value())
+            self.settings_manager.set_window_mode(opts[8].get_value())
+            self.settings_manager.set_window_keep_above(opts[9].get_value())
+            self.settings_manager.set_person_name_length(int(opts[10].get_value()))
+            self.settings_manager.set_place_title_length(int(opts[11].get_value()))
+            self.settings_manager.set_citation_text_length(int(opts[12].get_value()))
+        elif len(opts) >= 11:
+            # Format with tab density but without window settings
             self.settings_manager.set_tab_density(opts[7].get_value())
             self.settings_manager.set_person_name_length(int(opts[8].get_value()))
             self.settings_manager.set_place_title_length(int(opts[9].get_value()))
@@ -123,9 +131,20 @@ class UARecords(Gramplet):
         self.update()
 
     def _refresh_open_forms(self) -> None:
+        # Очищаємо кеш settings_manager щоб нові форми читали свіжі дані
+        try:
+            get_settings_manager.cache_clear()
+        except Exception:
+            pass
+
         for win in Gtk.Window.list_toplevels():
-            if isinstance(win, BaseEditForm) and hasattr(win, "_on_refresh_options"):
+            if isinstance(win, BaseEditForm):
                 try:
-                    win._on_refresh_options(None)
+                    # Оновлюємо поведінку вікна при зміні налаштувань
+                    if hasattr(win, "_apply_window_behavior"):
+                        win._apply_window_behavior()
+                    # Викликаємо повне оновлення форми якщо потрібно
+                    if hasattr(win, "_on_refresh_options"):
+                        win._on_refresh_options(None)
                 except Exception:
                     pass

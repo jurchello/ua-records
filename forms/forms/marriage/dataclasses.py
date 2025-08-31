@@ -29,6 +29,7 @@ else:
 
 @dataclass
 class Person:
+    create_person: bool = False
     person: WrappedPerson | None = None
     place: WrappedPlace | None = None
     gender: str | None = None

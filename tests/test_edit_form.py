@@ -64,7 +64,7 @@ def _install_minimal_env():
                 "list_label": "X list",
                 "form": _form_fn,
                 "form_state": _State,
-                "validator_class": _Validator,
+                "validator": _Validator,
                 "processor_factory": _Processor,
                 "ai_builder_factory": _ai_factory,
                 "reconciler_factory": _reconciler_factory,
