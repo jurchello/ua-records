@@ -211,15 +211,20 @@ class FormStateBase:
         """Override in subclass to specify which fields need type conversion"""
         return {}
 
-    def _convert_type_if_needed(self, value: str | int | dict[str, Any], prefix: str, key: str) -> str | int | dict[str, Any] | None:
+    def _convert_type_if_needed(
+            self,
+            value: str | int | dict[str, Any],
+            prefix: str,
+            key: str
+        ) -> str | int | dict[str, Any] | None:
         """Convert string values to appropriate types based on field configuration"""
         if not isinstance(value, str):
             return value
-        
+
         # Get type conversions from subclass
         conversions = self._get_type_conversions()
         field_path = f"{prefix}.{key}"
-        
+
         if field_path in conversions:
             target_type = conversions[field_path]
             if target_type == int:
@@ -235,7 +240,7 @@ class FormStateBase:
                 true_values = {'true', '1', 'on', 'yes', 't', 'y'}
                 clean_value = value.lower().strip()
                 return clean_value in true_values
-        
+
         return value
 
     def _log(self, allow: bool, msg: str) -> None:

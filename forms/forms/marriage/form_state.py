@@ -6,7 +6,7 @@ class FormState(FormStateBase):
     def __init__(self) -> None:
         super().__init__()
         self.typed = FormStateTyped()
-    
+
     def _get_type_conversions(self) -> dict[str, type]:
         """Specify which fields need type conversion for marriage form"""
         return {
