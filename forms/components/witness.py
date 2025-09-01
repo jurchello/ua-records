@@ -10,7 +10,7 @@ WITNESS_COMPONENT = {
             "title": "Поручитель",
             "fields": [
                 {
-                    "id": "{mount}.subject_person.create_person",
+                    "id": "{mount}.subject_person.allow_empty",
                     "labels": {
                         "long": "Створити пусту персону",
                         "middle": "Ств. пусту перс.",

@@ -118,10 +118,9 @@ def test_validation_structure_debugging(mock_gramps_env):
     print(f"citation bool: {bool(citation_check)}")
     print(f"place bool: {bool(place_check)}")
 
-    # Check _allow_empty
-    create_person1 = bool(ctx.form_state.get("groom_box", "create_person"))
-    create_person2 = bool(ctx.form_state.get("groom_box.subject_person", "create_person"))
-    print(f"create_person checks: {create_person1} or {create_person2} = {create_person1 or create_person2}")
+    # Check _allow_empty (now only checks subject_person level)
+    allow_empty = bool(ctx.form_state.get("groom_box.subject_person", "allow_empty"))
+    print(f"allow_empty check: {allow_empty}")
 
     # Check _subject_person_dc
     subject_person = ctx.form_state.get("groom_box", "subject_person")

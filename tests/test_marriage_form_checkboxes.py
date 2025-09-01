@@ -33,39 +33,39 @@ def _install_mock_environment():
     }
 
 
-def test_marriage_form_has_create_person_checkboxes():
-    """Test that all person entities have create_person checkboxes in the marriage form."""
+def test_marriage_form_has_allow_empty_checkboxes():
+    """Test that all person entities have allow_empty checkboxes in the marriage form."""
     _install_mock_environment()
     from edit_form import EditForm
 
     form = EditForm("marriage")
     state = form.make_form_state()
 
-    # Test that the form state has create_person fields for all person entities
+    # Test that the form state has allow_empty fields for all person entities
 
     # Groom
-    assert hasattr(state.typed.groom_box.subject_person, "create_person"), "Groom should have create_person checkbox"
-    assert isinstance(state.typed.groom_box.subject_person.create_person, bool), "create_person should be boolean"
-    assert state.typed.groom_box.subject_person.create_person is False, "create_person should default to False"
+    assert hasattr(state.typed.groom_box.subject_person, "allow_empty"), "Groom should have allow_empty checkbox"
+    assert isinstance(state.typed.groom_box.subject_person.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.groom_box.subject_person.allow_empty is False, "allow_empty should default to False"
 
     # Groom landowner
     assert hasattr(
-        state.typed.groom_box.landowner, "create_person"
-    ), "Groom landowner should have create_person checkbox"
-    assert isinstance(state.typed.groom_box.landowner.create_person, bool), "create_person should be boolean"
-    assert state.typed.groom_box.landowner.create_person is False, "create_person should default to False"
+        state.typed.groom_box.landowner, "allow_empty"
+    ), "Groom landowner should have allow_empty checkbox"
+    assert isinstance(state.typed.groom_box.landowner.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.groom_box.landowner.allow_empty is False, "allow_empty should default to False"
 
     # Bride
-    assert hasattr(state.typed.bride_box.subject_person, "create_person"), "Bride should have create_person checkbox"
-    assert isinstance(state.typed.bride_box.subject_person.create_person, bool), "create_person should be boolean"
-    assert state.typed.bride_box.subject_person.create_person is False, "create_person should default to False"
+    assert hasattr(state.typed.bride_box.subject_person, "allow_empty"), "Bride should have allow_empty checkbox"
+    assert isinstance(state.typed.bride_box.subject_person.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.bride_box.subject_person.allow_empty is False, "allow_empty should default to False"
 
     # Bride landowner
     assert hasattr(
-        state.typed.bride_box.landowner, "create_person"
-    ), "Bride landowner should have create_person checkbox"
-    assert isinstance(state.typed.bride_box.landowner.create_person, bool), "create_person should be boolean"
-    assert state.typed.bride_box.landowner.create_person is False, "create_person should default to False"
+        state.typed.bride_box.landowner, "allow_empty"
+    ), "Bride landowner should have allow_empty checkbox"
+    assert isinstance(state.typed.bride_box.landowner.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.bride_box.landowner.allow_empty is False, "allow_empty should default to False"
 
     # Witnesses
     witnesses = [
@@ -80,26 +80,26 @@ def test_marriage_form_has_create_person_checkboxes():
     ]
 
     for i, witness in enumerate(witnesses):
-        assert hasattr(witness, "create_person"), f"Witness {i+1} should have create_person checkbox"
-        assert isinstance(witness.create_person, bool), f"Witness {i+1} create_person should be boolean"
-        assert witness.create_person is False, f"Witness {i+1} create_person should default to False"
+        assert hasattr(witness, "allow_empty"), f"Witness {i+1} should have allow_empty checkbox"
+        assert isinstance(witness.allow_empty, bool), f"Witness {i+1} allow_empty should be boolean"
+        assert witness.allow_empty is False, f"Witness {i+1} allow_empty should default to False"
 
     # Clergymen
     assert hasattr(
-        state.typed.clergymen_box.clergyman_1, "create_person"
-    ), "Clergyman 1 should have create_person checkbox"
-    assert isinstance(state.typed.clergymen_box.clergyman_1.create_person, bool), "create_person should be boolean"
-    assert state.typed.clergymen_box.clergyman_1.create_person is False, "create_person should default to False"
+        state.typed.clergymen_box.clergyman_1, "allow_empty"
+    ), "Clergyman 1 should have allow_empty checkbox"
+    assert isinstance(state.typed.clergymen_box.clergyman_1.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.clergymen_box.clergyman_1.allow_empty is False, "allow_empty should default to False"
 
     assert hasattr(
-        state.typed.clergymen_box.clergyman_2, "create_person"
-    ), "Clergyman 2 should have create_person checkbox"
-    assert isinstance(state.typed.clergymen_box.clergyman_2.create_person, bool), "create_person should be boolean"
-    assert state.typed.clergymen_box.clergyman_2.create_person is False, "create_person should default to False"
+        state.typed.clergymen_box.clergyman_2, "allow_empty"
+    ), "Clergyman 2 should have allow_empty checkbox"
+    assert isinstance(state.typed.clergymen_box.clergyman_2.allow_empty, bool), "allow_empty should be boolean"
+    assert state.typed.clergymen_box.clergyman_2.allow_empty is False, "allow_empty should default to False"
 
 
 def test_checkbox_can_be_modified():
-    """Test that create_person checkboxes can be set to True."""
+    """Test that allow_empty checkboxes can be set to True."""
     _install_mock_environment()
     from edit_form import EditForm
 
@@ -107,16 +107,16 @@ def test_checkbox_can_be_modified():
     state = form.make_form_state()
 
     # Test setting checkbox to True
-    state.typed.groom_box.subject_person.create_person = True
-    assert state.typed.groom_box.subject_person.create_person is True, "create_person should be settable to True"
+    state.typed.groom_box.subject_person.allow_empty = True
+    assert state.typed.groom_box.subject_person.allow_empty is True, "allow_empty should be settable to True"
 
     # Test setting back to False
-    state.typed.groom_box.subject_person.create_person = False
-    assert state.typed.groom_box.subject_person.create_person is False, "create_person should be settable to False"
+    state.typed.groom_box.subject_person.allow_empty = False
+    assert state.typed.groom_box.subject_person.allow_empty is False, "allow_empty should be settable to False"
 
 
 def test_checkbox_serialization():
-    """Test that create_person checkboxes work with to_dict/update_from_dict."""
+    """Test that allow_empty checkboxes work with to_dict/update_from_dict."""
     _install_mock_environment()
     from edit_form import EditForm
 
@@ -124,23 +124,23 @@ def test_checkbox_serialization():
     state = form.make_form_state()
 
     # Set some checkboxes to True
-    state.typed.groom_box.subject_person.create_person = True
-    state.typed.bride_box.landowner.create_person = True
-    state.typed.clergymen_box.clergyman_1.create_person = True
+    state.typed.groom_box.subject_person.allow_empty = True
+    state.typed.bride_box.landowner.allow_empty = True
+    state.typed.clergymen_box.clergyman_1.allow_empty = True
 
     # Test serialization
     data_dict = state.to_dict()
-    assert data_dict["groom_box"]["subject_person"]["create_person"] is True, "create_person value should be preserved"
-    assert data_dict["bride_box"]["landowner"]["create_person"] is True, "create_person value should be preserved"
-    assert data_dict["clergymen_box"]["clergyman_1"]["create_person"] is True, "create_person value should be preserved"
+    assert data_dict["groom_box"]["subject_person"]["allow_empty"] is True, "allow_empty value should be preserved"
+    assert data_dict["bride_box"]["landowner"]["allow_empty"] is True, "allow_empty value should be preserved"
+    assert data_dict["clergymen_box"]["clergyman_1"]["allow_empty"] is True, "allow_empty value should be preserved"
 
     # Test deserialization
     new_state = form.make_form_state()
     new_state.update_from_dict(data_dict)
 
-    assert new_state.typed.groom_box.subject_person.create_person is True, "create_person should be restored from dict"
-    assert new_state.typed.bride_box.landowner.create_person is True, "create_person should be restored from dict"
-    assert new_state.typed.clergymen_box.clergyman_1.create_person is True, "create_person should be restored from dict"
+    assert new_state.typed.groom_box.subject_person.allow_empty is True, "allow_empty should be restored from dict"
+    assert new_state.typed.bride_box.landowner.allow_empty is True, "allow_empty should be restored from dict"
+    assert new_state.typed.clergymen_box.clergyman_1.allow_empty is True, "allow_empty should be restored from dict"
 
 
 # Global variable to store MOCK_PROVIDERS

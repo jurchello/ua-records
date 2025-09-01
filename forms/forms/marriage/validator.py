@@ -15,8 +15,8 @@ class MarriageValidator(ValidatorBase):
             "bride_box.subject_person": "Наречена → Основні дані",
             "groom_box.subject_person.age": "Наречений → Вік",
             "bride_box.subject_person.age": "Наречена → Вік",
-            "groom_box.subject_person.marriage_number": "Наречений → Номер шлюбу",
-            "bride_box.subject_person.marriage_number": "Наречена → Номер шлюбу",
+            "groom_box.subject_person.marriages_count": "Наречений → Кількість шлюбів",
+            "bride_box.subject_person.marriages_count": "Наречена → Кількість шлюбів",
             "groom_box.landowner.gender": "Наречений → Поміщик → Стать",
             "bride_box.landowner.gender": "Наречена → Поміщик → Стать",
         }
@@ -34,9 +34,7 @@ class MarriageValidator(ValidatorBase):
             self.add("common_box.marriage_place", "Місце обовʼязкове")
 
     def _allow_empty(self, base: str) -> bool:
-        v1 = bool(self.ctx.form_state.get(base, "create_person"))
-        v2 = bool(self.ctx.form_state.get(f"{base}.subject_person", "create_person"))
-        return v1 or v2
+        return bool(self.ctx.form_state.get(base, "subject_person.allow_empty"))
 
     def _subject_person_dc(self, base: str):
         return self.ctx.form_state.get(base, "subject_person")
@@ -57,7 +55,7 @@ class MarriageValidator(ValidatorBase):
         )
         self.validate_age_dc(sp, field="age", lo=0, hi=120, field_path=f"{base}.subject_person.age", label=label)
         self.validate_int_range_dc(
-            sp, field="marriage_number", lo=1, hi=10, field_path=f"{base}.subject_person.marriage_number", label=label
+            sp, field="marriages_count", lo=1, hi=10, field_path=f"{base}.subject_person.marriages_count", label=label
         )
 
     def _validate_gender(self, bases: List[str]) -> None:

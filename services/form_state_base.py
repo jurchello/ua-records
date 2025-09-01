@@ -73,6 +73,7 @@ class FormStateBase:
 
         wrapped = self._wrap_object_value(value)
         wrapped = self._enrich_wrapped_value(wrapped, allow_log, prefix, norm_key)
+        wrapped = self._convert_type_if_needed(wrapped, prefix, norm_key)
 
         current = getattr(parent, leaf)
         if isinstance(current, dict) and isinstance(wrapped, dict):
@@ -205,6 +206,37 @@ class FormStateBase:
         merged = dict(current)
         merged.update(new)
         return merged
+
+    def _get_type_conversions(self) -> dict[str, type]:
+        """Override in subclass to specify which fields need type conversion"""
+        return {}
+
+    def _convert_type_if_needed(self, value: str | int | dict[str, Any], prefix: str, key: str) -> str | int | dict[str, Any] | None:
+        """Convert string values to appropriate types based on field configuration"""
+        if not isinstance(value, str):
+            return value
+        
+        # Get type conversions from subclass
+        conversions = self._get_type_conversions()
+        field_path = f"{prefix}.{key}"
+        
+        if field_path in conversions:
+            target_type = conversions[field_path]
+            if target_type == int:
+                if value.strip() == '':
+                    return None
+                try:
+                    return int(value)
+                except ValueError:
+                    # Return original string if conversion fails - validator will catch this
+                    return value
+            elif target_type == bool:
+                # Robust boolean conversion
+                true_values = {'true', '1', 'on', 'yes', 't', 'y'}
+                clean_value = value.lower().strip()
+                return clean_value in true_values
+        
+        return value
 
     def _log(self, allow: bool, msg: str) -> None:
         if allow:

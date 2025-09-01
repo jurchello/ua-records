@@ -10,7 +10,7 @@ CLERGYMAN_COMPONENT = {
             "title": "Священнослужитель",
             "fields": [
                 {
-                    "id": "{mount}.create_person",
+                    "id": "{mount}.allow_empty",
                     "labels": {
                         "long": "Створити пусту персону",
                         "middle": "Ств. пусту перс.",

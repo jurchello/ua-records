@@ -5,7 +5,7 @@ from configs.constants import MAN_MILITARY_RANKS
 # pylint: disable=duplicate-code,line-too-long
 MAN_SUBJECT_FRAGMENT = [
     {
-        "id": "create_person",
+        "id": "allow_empty",
         "labels": {
             "long": "Створити пусту персону",
             "middle": "Ств. пусту перс.",

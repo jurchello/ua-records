@@ -91,12 +91,18 @@ def test_complete_form_validation(mock_gramps_env):
     groom_allow_empty = validator._allow_empty("groom_box")
     print(f"Groom subject_person: {groom_sp}")
     print(f"Groom allow_empty: {groom_allow_empty}")
+    
+    # Test that allow_empty defaults to False when not set
+    assert groom_allow_empty is False, "allow_empty should default to False when not explicitly set"
 
     # Party validation for bride
     bride_sp = ctx.form_state.get("bride_box", "subject_person")
     bride_allow_empty = validator._allow_empty("bride_box")
     print(f"Bride subject_person: {bride_sp}")
     print(f"Bride allow_empty: {bride_allow_empty}")
+    
+    # Test that allow_empty defaults to False when not set
+    assert bride_allow_empty is False, "allow_empty should default to False when not explicitly set"
 
     # Manual identity validation for bride
     if bride_sp:
@@ -180,6 +186,64 @@ def test_validation_error_cases(mock_gramps_env):
     print(f"✓ Missing person data detected: {len(person_issues)} issues")
 
     print(f"✅ All error cases properly detected")
+
+
+def test_allow_empty_integration_in_existing_flow(mock_gramps_env):
+    """Test allow_empty functionality within existing validation flow"""
+    from forms.forms.marriage.form_state import FormState
+    from services.work_context import WorkContext
+    from forms.forms.marriage.validator import MarriageValidator
+
+    form_state = FormState()
+    ctx = WorkContext()
+    ctx.form_state = form_state
+
+    print(f"\n🔄 === Allow Empty Integration Test ===")
+
+    # Fill required common fields
+    citation_obj = mock_gramps_env["citation"]
+    place_obj = mock_gramps_env["place"]
+    form_state.set("common_box", "citation", citation_obj, allow_log=True)
+    form_state.set("common_box", "marriage_place", place_obj, allow_log=True)
+
+    # Test scenario: groom with allow_empty=True, bride with allow_empty=False
+    form_state.set("groom_box", "subject_person.allow_empty", True, allow_log=True)
+    # No names for groom - should pass
+    
+    form_state.set("bride_box", "subject_person.allow_empty", False, allow_log=True)  
+    form_state.set("bride_box", "subject_person.original_name", "Марія", allow_log=True)
+    form_state.set("bride_box", "subject_person.normalized_surname", "Іванівна", allow_log=True)
+
+    # Verify allow_empty values are set correctly
+    groom_allow_empty = ctx.form_state.get("groom_box", "subject_person.allow_empty")
+    bride_allow_empty = ctx.form_state.get("bride_box", "subject_person.allow_empty")
+    print(f"Groom allow_empty stored as: {groom_allow_empty} (type: {type(groom_allow_empty)})")
+    print(f"Bride allow_empty stored as: {bride_allow_empty} (type: {type(bride_allow_empty)})")
+
+    # Verify validator can read allow_empty correctly
+    validator = MarriageValidator(ctx)
+    groom_validator_result = validator._allow_empty("groom_box")
+    bride_validator_result = validator._allow_empty("bride_box")
+    print(f"Validator reads groom allow_empty as: {groom_validator_result}")
+    print(f"Validator reads bride allow_empty as: {bride_validator_result}")
+    
+    assert groom_validator_result is True, "Validator should read groom allow_empty as True"
+    assert bride_validator_result is False, "Validator should read bride allow_empty as False"
+
+    # Run validation
+    issues = validator.validate()
+    print(f"Validation issues: {len(issues)}")
+    for issue in issues:
+        print(f"  - {issue.field}: {issue.message}")
+
+    # Should pass because:
+    # - Common fields are filled
+    # - Groom has allow_empty=True (no validation required)
+    # - Bride has names filled (validation passes)
+    groom_issues = [i for i in issues if "Наречений" in i.field]
+    assert len(groom_issues) == 0, f"Groom validation should pass with allow_empty=True, but got: {[i.message for i in groom_issues]}"
+
+    print(f"✅ Allow empty integration test passed")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from configs.constants import WOMAN_MILITARY_RANKS
 
 WOMAN_SUBJECT_FRAGMENT = [
     {
-        "id": "create_person",
+        "id": "allow_empty",
         "labels": {
             "long": "Створити пусту персону",
             "middle": "Ств. пусту перс.",

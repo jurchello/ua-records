@@ -221,7 +221,7 @@ def test_commit_planner_create_update_delete():
     assert ("Event", "H-EV-1") in deletes
 
 
-def test_orchestrator_create_person_and_update_family():
+def test_orchestrator_allow_empty_and_update_family():
 
     def _builder_person(data):
         return DummyPerson("")

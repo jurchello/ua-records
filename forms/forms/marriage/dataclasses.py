@@ -29,14 +29,14 @@ else:
 
 @dataclass
 class Person:
-    create_person: bool = False
+    allow_empty: bool = False
     person: WrappedPerson | None = None
     place: WrappedPlace | None = None
     gender: str | None = None
     caste: str | None = None
     occupation: str | None = None
-    age: str | None = None
-    marriages_count: str | None = None
+    age: int | None = None
+    marriages_count: int | None = None
     military_rank: str | None = None
     original_name: str | None = None
     normalized_name: str | None = None
