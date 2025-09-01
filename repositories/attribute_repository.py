@@ -1,16 +1,33 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List, Sequence, Tuple
 
 from gramps.gen.lib import Attribute
 
-from repositories.base_repository import BaseRepository
+from repositories.attribute_root_repository import AttributeRootRepository
+from repositories.citation_base_repository import CitationBaseRepository
+from repositories.note_base_repository import NoteBaseRepository
 
+class AttributeRepository(
+    AttributeRootRepository,
+    CitationBaseRepository,
+    NoteBaseRepository,
+):
 
-class AttributeRepository(BaseRepository):
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-    def get_type(self, attribute: Attribute) -> Any:
-        return attribute.get_type()
+    def get_referenced_handles(self, attribute: Attribute) -> List[Tuple[str, str]]:
+        return attribute.get_referenced_handles()
 
-    def get_value(self, attribute: Attribute) -> str:
-        return attribute.get_value()
+    def get_schema(self) -> Dict[str, Any]:
+        return Attribute.get_schema()
+
+    def merge(self, attribute: Attribute, acquisition: Attribute) -> None:
+        attribute.merge(acquisition)
+
+    def serialize(self, attribute: Attribute) -> Sequence[Any]:
+        return attribute.serialize()
+
+    def unserialize(self, attribute: Attribute, data: Sequence[Any]) -> None:
+        attribute.unserialize(tuple(data))

@@ -1,45 +1,109 @@
 from __future__ import annotations
-
-from typing import Any, Iterator, List, Optional
-
-from gramps.gen.db.txn import DbTxn
-from gramps.gen.lib import Source
-
-from repositories.basic_primary_object_repository import BasicPrimaryObjectRepository
-from repositories.citation_base_repository import CitationBaseRepository
+from typing import Any, List, Tuple
+from gramps.gen.lib.src import Source
+from repositories.media_base_repository import MediaBaseRepository
 from repositories.note_base_repository import NoteBaseRepository
+from repositories.src_attribute_base_repository import SrcAttributeBaseRepository
+from repositories.indirect_citation_base_repository import IndirectCitationBaseRepository
+from repositories.primary_object_repository import PrimaryObjectRepository
 
+class SourceRepository(
+    MediaBaseRepository,
+    NoteBaseRepository,
+    SrcAttributeBaseRepository,
+    IndirectCitationBaseRepository,
+    PrimaryObjectRepository,
+):
+    def __init__(self, db=None, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-class SourceRepository(BasicPrimaryObjectRepository, NoteBaseRepository, CitationBaseRepository):
+    def add_repo_reference(self, obj: Source, repo_ref: Any) -> None:
+        obj.add_repo_reference(repo_ref)
 
-    def get_by_handle(self, handle: str) -> Optional[Source]:
-        return self.db.get_source_from_handle(handle)
+    def get_abbreviation(self, obj: Source) -> str:
+        return obj.get_abbreviation()
 
-    def add(self, source: Source, description: str = "Add source") -> str:
-        with DbTxn(description, self.db) as trans:
-            return self.db.add_source(source, trans)
+    def get_author(self, obj: Source) -> str:
+        return obj.get_author()
 
-    def commit(self, source: Source, description: str = "Update source") -> None:
-        with DbTxn(description, self.db) as trans:
-            self.db.commit_source(source, trans)
+    def get_citation_child_list(self, obj: Source) -> List[Any]:
+        return obj.get_citation_child_list()
 
-    def iter_all(self) -> Iterator[Source]:
-        return self.db.iter_sources()
+    def get_handle_referents(self, obj: Source) -> List[Any]:
+        return obj.get_handle_referents()
 
-    def get_abbreviation(self, source: Source) -> str:
-        return source.get_abbreviation()
+    def get_note_child_list(self, obj: Source) -> List[Any]:
+        return obj.get_note_child_list()
 
-    def get_author(self, source: Source) -> str:
-        return source.get_author()
+    def get_publication_info(self, obj: Source) -> str:
+        return obj.get_publication_info()
 
-    def get_publication_info(self, source: Source) -> str:
-        return source.get_publication_info()
+    def get_referenced_handles(self, obj: Source) -> List[Tuple[str, str]]:
+        return obj.get_referenced_handles()
 
-    def get_title(self, source: Source) -> str:
-        return source.get_title()
+    def get_reporef_list(self, obj: Source) -> List[Any]:
+        return obj.get_reporef_list()
 
-    def get_reporef_list(self, source: Source) -> List[Any]:
-        return source.get_reporef_list()
+    @classmethod
+    def get_schema(cls) -> dict:
+        return Source.get_schema()
 
-    def has_repo_reference(self, source: Source, repo_handle: str) -> bool:
-        return source.has_repo_reference(repo_handle)
+    def get_text_data_child_list(self, obj: Source) -> List[Any]:
+        return obj.get_text_data_child_list()
+
+    def get_text_data_list(self, obj: Source) -> List[Any]:
+        return obj.get_text_data_list()
+
+    def get_title(self, obj: Source) -> str:
+        return obj.get_title()
+
+    def has_repo_reference(self, obj: Source, repo_handle: str) -> bool:
+        return obj.has_repo_reference(repo_handle)
+
+    def merge(self, obj: Source, acquisition: Source) -> None:
+        obj.merge(acquisition)
+
+    def remove_repo_references(self, obj: Source, repo_handle_list: List[str]) -> None:
+        obj.remove_repo_references(repo_handle_list)
+
+    def replace_repo_references(self, obj: Source, old_handle: str, new_handle: str) -> None:
+        obj.replace_repo_references(old_handle, new_handle)
+
+    def serialize(self, obj: Source) -> Any:
+        return obj.serialize()
+
+    def set_abbreviation(self, obj: Source, abbrev: str) -> None:
+        obj.set_abbreviation(abbrev)
+
+    def set_author(self, obj: Source, author: str) -> None:
+        obj.set_author(author)
+
+    def set_publication_info(self, obj: Source, text: str) -> None:
+        obj.set_publication_info(text)
+
+    def set_reporef_list(self, obj: Source, reporef_list: List[Any]) -> None:
+        obj.set_reporef_list(reporef_list)
+
+    def set_title(self, obj: Source, title: str) -> None:
+        obj.set_title(title)
+
+    def unserialize(self, obj: Source, data: Any) -> None:
+        obj.unserialize(data)
+
+    def title(self, obj: Source) -> str:
+        try:
+            return obj.title
+        except AttributeError:
+            return obj.get_title()
+
+    def author(self, obj: Source) -> str:
+        try:
+            return obj.author
+        except AttributeError:
+            return obj.get_author()
+
+    def publication_info(self, obj: Source) -> str:
+        try:
+            return obj.publication_info
+        except AttributeError:
+            return obj.get_publication_info()

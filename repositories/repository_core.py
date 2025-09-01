@@ -6,8 +6,7 @@ if TYPE_CHECKING:
     from gramps.gen.db.base import DbReadBase
 
 
-class BaseRepository:
-    """Base repository class providing database access for all repositories."""
-
-    def __init__(self, db: DbReadBase) -> None:
+class RepositoryCore:
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.db = db

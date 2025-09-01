@@ -1,56 +1,62 @@
 from __future__ import annotations
-
 from typing import Any, List, Tuple
+from gramps.gen.lib.reporef import RepoRef
+from repositories.secondary_object_repository import SecondaryObjectRepository
+from repositories.privacy_base_repository import PrivacyBaseRepository
+from repositories.note_base_repository import NoteBaseRepository
+from repositories.ref_base_repository import RefBaseRepository
 
-from gramps.gen.lib import RepoRef
+class RepoRefRepository(
+    SecondaryObjectRepository,
+    PrivacyBaseRepository,
+    NoteBaseRepository,
+    RefBaseRepository,
+):
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-from repositories.base_repository import BaseRepository
+    def get_call_number(self, obj: RepoRef) -> str:
+        return obj.get_call_number()
 
+    def get_media_type(self, obj: RepoRef) -> Any:
+        return obj.get_media_type()
 
-class RepoRefRepository(BaseRepository):
-    """Repository for RepoRef objects with all RepoRef-specific methods."""
+    def get_referenced_handles(self, obj: RepoRef) -> List[Tuple[str, str]]:
+        return obj.get_referenced_handles()
 
-    # RepoRef-specific methods from stub
-    def get_handle_referents(self, reporef: RepoRef) -> List[Any]:
-        """Return the list of child objects which may reference primary objects."""
-        return reporef.get_handle_referents()
+    @classmethod
+    def get_schema(cls) -> dict:
+        return RepoRef.get_schema()
 
-    def get_media_type(self, reporef: RepoRef) -> Tuple[int, str]:
-        """Return the media type of the RepoRef."""
-        return reporef.get_media_type()
+    def get_text_data_list(self, obj: RepoRef) -> List[Any]:
+        return obj.get_text_data_list()
 
-    def get_note_child_list(self, reporef: RepoRef) -> List[Any]:
-        """Return the list of child secondary objects that may refer notes."""
-        return reporef.get_note_child_list()
+    def is_equivalent(self, obj: RepoRef, other: RepoRef) -> int:
+        return obj.is_equivalent(other)
 
-    def get_referenced_handles(self, reporef: RepoRef) -> List[Tuple[str, str]]:
-        """Return the list of (classname, handle) tuples for all directly referenced primary objects."""
-        return reporef.get_referenced_handles()
+    def merge(self, obj: RepoRef, acquisition: RepoRef) -> None:
+        obj.merge(acquisition)
 
-    def get_text_data_child_list(self, reporef: RepoRef) -> List[Any]:
-        """Return the list of child objects that may carry textual data."""
-        return reporef.get_text_data_child_list()
+    def serialize(self, obj: RepoRef) -> Any:
+        return obj.serialize()
 
-    def get_text_data_list(self, reporef: RepoRef) -> List[str]:
-        """Return the list of all textual attributes of the object."""
-        return reporef.get_text_data_list()
+    def set_call_number(self, obj: RepoRef, number: str) -> None:
+        obj.set_call_number(number)
 
-    def is_equivalent(self, reporef: RepoRef, other: RepoRef) -> bool:
-        """Compare two RepoRef objects for equivalence."""
-        return reporef.is_equivalent(other)
+    def set_media_type(self, obj: RepoRef, media_type: Any) -> None:
+        obj.set_media_type(media_type)
 
-    def merge(self, reporef: RepoRef, acquisition: RepoRef) -> None:
-        """Merge the content of acquisition into this reporef."""
-        reporef.merge(acquisition)
+    def unserialize(self, obj: RepoRef, data: Any) -> None:
+        obj.unserialize(data)
 
-    def serialize(self, reporef: RepoRef) -> Tuple[Any, ...]:
-        """Convert the data held in the RepoRef to a Python tuple."""
-        return reporef.serialize()
+    def call_number(self, obj: RepoRef) -> str:
+        try:
+            return obj.call_number
+        except AttributeError:
+            return obj.get_call_number()
 
-    def set_media_type(self, reporef: RepoRef, media_type: Tuple[int, str]) -> None:
-        """Set the media type of the RepoRef."""
-        reporef.set_media_type(media_type)
-
-    def unserialize(self, reporef: RepoRef, data: Tuple[Any, ...]) -> None:
-        """Convert the data held in a tuple back into the data in a RepoRef object."""
-        reporef.unserialize(data)
+    def media_type(self, obj: RepoRef) -> Any:
+        try:
+            return obj.media_type
+        except AttributeError:
+            return obj.get_media_type()

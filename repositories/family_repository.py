@@ -1,131 +1,97 @@
 from __future__ import annotations
-
-from typing import Any, Iterator, List, Optional, Tuple
-
-from gramps.gen.db.txn import DbTxn
+from typing import Any, List, Optional, Tuple
 from gramps.gen.lib import Family
 from gramps.gen.lib.childref import ChildRef
 from gramps.gen.lib.eventref import EventRef
-from gramps.gen.lib.primaryobj import PrimaryObject
+from gramps.gen.lib.familyreltype import FamilyRelType
+from repositories.citation_base_repository import CitationBaseRepository
+from repositories.note_base_repository import NoteBaseRepository
+from repositories.media_base_repository import MediaBaseRepository
+from repositories.attribute_base_repository import AttributeBaseRepository
+from repositories.primary_object_repository import PrimaryObjectRepository
 
-from repositories.base_repository import BaseRepository
+class FamilyRepository(
+    CitationBaseRepository,
+    NoteBaseRepository,
+    MediaBaseRepository,
+    AttributeBaseRepository,
+    PrimaryObjectRepository,
+):
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
+    def add_child_ref(self, obj: Family, child_ref: ChildRef) -> None:
+        obj.add_child_ref(child_ref)
 
-class FamilyRepository(BaseRepository):
-    """Repository for Family objects with full CRUD operations and all Family-specific methods."""
+    def add_event_ref(self, obj: Family, event_ref: EventRef) -> None:
+        obj.add_event_ref(event_ref)
 
-    # CRUD Operations
-    def get_by_handle(self, handle: str) -> Optional[Family]:
-        """Get Family by handle from database."""
-        return self.db.get_family_from_handle(handle)
+    def get_child_ref_list(self, obj: Family) -> List[ChildRef]:
+        return obj.get_child_ref_list()
 
-    def add(self, family: Family, description: str = "Add family") -> str:
-        """Add new Family to database."""
-        with DbTxn(description, self.db) as trans:
-            return self.db.add_family(family, trans)
+    def get_citation_child_list(self, obj: Family) -> List[Any]:
+        return obj.get_citation_child_list()
 
-    def commit(self, family: Family, description: str = "Update family") -> None:
-        """Commit Family changes to database."""
-        with DbTxn(description, self.db) as trans:
-            self.db.commit_family(family, trans)
+    def get_event_list(self, obj: Family) -> List[Any]:
+        return obj.get_event_list()
 
-    def iter_all(self) -> Iterator[Family]:
-        """Iterate over all Families in database."""
-        return self.db.iter_families()
+    def get_event_ref_list(self, obj: Family) -> List[EventRef]:
+        return obj.get_event_ref_list()
 
-    # Family-specific methods from stub
-    def add_child_ref(self, family: Family, child_ref: ChildRef) -> None:
-        """Add a ChildRef to the family."""
-        family.add_child_ref(child_ref)
+    def get_father_handle(self, obj: Family) -> Optional[str]:
+        return obj.get_father_handle()
 
-    def add_event_ref(self, family: Family, event_ref: EventRef) -> None:
-        """Add an EventRef to the family."""
-        family.add_event_ref(event_ref)
+    def get_handle_referents(self, obj: Family) -> List[Any]:
+        return obj.get_handle_referents()
 
-    def get_child_ref_list(self, family: Family) -> List[ChildRef]:
-        """Return the list of ChildRef objects."""
-        return family.get_child_ref_list()
+    def get_mother_handle(self, obj: Family) -> Optional[str]:
+        return obj.get_mother_handle()
 
-    def get_citation_child_list(self, family: Family) -> List[Any]:
-        """Return the list of child secondary objects that may refer citations."""
-        return family.get_citation_child_list()
+    def get_note_child_list(self, obj: Family) -> List[Any]:
+        return obj.get_note_child_list()
 
-    def get_event_list(self, family: Family) -> List[Any]:
-        """Return the list of event objects."""
-        return family.get_event_list()
+    def get_referenced_handles(self, obj: Family) -> List[Tuple[str, str]]:
+        return obj.get_referenced_handles()
 
-    def get_event_ref_list(self, family: Family) -> List[EventRef]:
-        """Return the list of EventRef objects."""
-        return family.get_event_ref_list()
+    def get_relationship(self, obj: Family) -> FamilyRelType:
+        return obj.get_relationship()
 
-    def get_father_handle(self, family: Family) -> str:
-        """Return the handle of the father."""
-        return family.get_father_handle()
+    @classmethod
+    def get_schema(cls) -> dict:
+        return Family.get_schema()
 
-    def get_handle_referents(self, family: Family) -> List[Any]:
-        """Return the list of child objects which may reference primary objects."""
-        return family.get_handle_referents()
+    def get_text_data_child_list(self, obj: Family) -> List[Any]:
+        return obj.get_text_data_child_list()
 
-    def get_mother_handle(self, family: Family) -> str:
-        """Return the handle of the mother."""
-        return family.get_mother_handle()
+    def get_text_data_list(self, obj: Family) -> List[Any]:
+        return obj.get_text_data_list()
 
-    def get_note_child_list(self, family: Family) -> List[Any]:
-        """Return the list of child secondary objects that may refer notes."""
-        return family.get_note_child_list()
+    def merge(self, obj: Family, acquisition: Family) -> None:
+        obj.merge(acquisition)
 
-    def get_referenced_handles(self, family: Family) -> List[Tuple[str, str]]:
-        """Return the list of (classname, handle) tuples for all directly referenced primary objects."""
-        return family.get_referenced_handles()
+    def remove_child_handle(self, obj: Family, child_handle: str) -> None:
+        obj.remove_child_handle(child_handle)
 
-    def get_relationship(self, family: Family) -> Tuple[int, str]:
-        """Return the relationship type tuple."""
-        return family.get_relationship()
+    def remove_child_ref(self, obj: Family, child_ref: ChildRef) -> None:
+        obj.remove_child_ref(child_ref)
 
-    def get_text_data_child_list(self, family: Family) -> List[Any]:
-        """Return the list of child objects that may carry textual data."""
-        return family.get_text_data_child_list()
+    def serialize(self, obj: Family) -> Tuple[Any, ...]:
+        return obj.serialize()
 
-    def get_text_data_list(self, family: Family) -> List[str]:
-        """Return the list of all textual attributes of the object."""
-        return family.get_text_data_list()
+    def set_child_ref_list(self, obj: Family, child_ref_list: List[ChildRef]) -> None:
+        obj.set_child_ref_list(child_ref_list)
 
-    def merge(self, family: Family, acquisition: PrimaryObject) -> None:
-        """Merge the content of acquisition into this family."""
-        family.merge(acquisition)
+    def set_event_ref_list(self, obj: Family, event_ref_list: List[EventRef]) -> None:
+        obj.set_event_ref_list(event_ref_list)
 
-    def remove_child_handle(self, family: Family, child_handle: str) -> bool:
-        """Remove the specified child handle from the family."""
-        return family.remove_child_handle(child_handle)
+    def set_father_handle(self, obj: Family, person_handle: str) -> None:
+        obj.set_father_handle(person_handle)
 
-    def remove_child_ref(self, family: Family, child_ref: ChildRef) -> bool:
-        """Remove the specified ChildRef from the family."""
-        return family.remove_child_ref(child_ref)
+    def set_mother_handle(self, obj: Family, person_handle: str) -> None:
+        obj.set_mother_handle(person_handle)
 
-    def serialize(self, family: Family) -> Tuple[Any, ...]:
-        """Convert the data held in the Family to a Python tuple that represents all the data elements."""
-        return family.serialize()
+    def set_relationship(self, obj: Family, relationship_type: Tuple[int, str]) -> None:
+        obj.set_relationship(relationship_type)
 
-    def set_child_ref_list(self, family: Family, child_ref_list: List[ChildRef]) -> None:
-        """Set the Family instance's ChildRef list to the passed list."""
-        family.set_child_ref_list(child_ref_list)
-
-    def set_event_ref_list(self, family: Family, event_ref_list: List[EventRef]) -> None:
-        """Set the Family instance's EventRef list to the passed list."""
-        family.set_event_ref_list(event_ref_list)
-
-    def set_father_handle(self, family: Family, person_handle: str) -> None:
-        """Set the father handle for the family."""
-        family.set_father_handle(person_handle)
-
-    def set_mother_handle(self, family: Family, person_handle: str) -> None:
-        """Set the mother handle for the family."""
-        family.set_mother_handle(person_handle)
-
-    def set_relationship(self, family: Family, relationship_type: Tuple[int, str]) -> None:
-        """Set the relationship type for the family."""
-        family.set_relationship(relationship_type)
-
-    def unserialize(self, family: Family, data: Tuple[Any, ...]) -> None:
-        """Convert the data held in a tuple created by the serialize method back into the data in a Family object."""
-        family.unserialize(data)
+    def unserialize(self, obj: Family, data: Tuple[Any, ...]) -> None:
+        obj.unserialize(data)

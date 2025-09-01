@@ -4,10 +4,11 @@ from typing import List
 
 from gramps.gen.lib import Attribute, AttributeBase
 
-from repositories.base_repository import BaseRepository
+from repositories.attribute_root_base_repository import AttributeRootBaseRepository
 
 
-class AttributeBaseRepository(BaseRepository):
+class AttributeBaseRepository(AttributeRootBaseRepository):
 
-    def get_attribute_list(self, obj: AttributeBase) -> List[Attribute]:
-        return obj.get_attribute_list()
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
+

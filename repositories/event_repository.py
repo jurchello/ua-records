@@ -2,91 +2,88 @@ from __future__ import annotations
 
 from typing import Any, Iterator, List, Optional, Tuple
 
-from gramps.gen.db.txn import DbTxn
 from gramps.gen.lib import Event
 
-from repositories.base_repository import BaseRepository
+from repositories.attribute_base_repository import AttributeBaseRepository
+from repositories.citation_base_repository import CitationBaseRepository
+from repositories.date_base_repository import DateBaseRepository
+from repositories.media_base_repository import MediaBaseRepository
+from repositories.note_base_repository import NoteBaseRepository
+from repositories.place_base_repository import PlaceBaseRepository
+from repositories.primary_object_repository import PrimaryObjectRepository
+from gramps.gen.lib.eventtype import EventType
 
 
-class EventRepository(BaseRepository):
-    """Repository for Event objects with full CRUD operations and all Event-specific methods."""
+class EventRepository(
+    CitationBaseRepository,
+    NoteBaseRepository,
+    MediaBaseRepository,
+    AttributeBaseRepository,
+    DateBaseRepository,
+    PlaceBaseRepository,
+    PrimaryObjectRepository,
+):
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-    # CRUD Operations
-    def get_by_handle(self, handle: str) -> Optional[Event]:
-        """Get Event by handle from database."""
-        return self.db.get_event_from_handle(handle)
+    def are_equal(self, obj: Event, other: Event) -> bool:
+        return obj.are_equal(other)
 
-    def add(self, event: Event, description: str = "Add event") -> str:
-        """Add new Event to database."""
-        with DbTxn(description, self.db) as trans:
-            return self.db.add_event(event, trans)
+    def get_citation_child_list(self, obj: Event) -> List[Any]:
+        return obj.get_citation_child_list()
 
-    def commit(self, event: Event, description: str = "Update event") -> None:
-        """Commit Event changes to database."""
-        with DbTxn(description, self.db) as trans:
-            self.db.commit_event(event, trans)
+    def get_description(self, obj: Event) -> str:
+        return obj.get_description()
 
-    def iter_all(self) -> Iterator[Event]:
-        """Iterate over all Events in database."""
-        return self.db.iter_events()
+    def get_handle_referents(self, obj: Event) -> List[Any]:
+        return obj.get_handle_referents()
 
-    # Event-specific methods from stub
-    def are_equal(self, event: Event, other: Event) -> bool:
-        """Compare two Event objects for equality."""
-        return event.are_equal(other)
+    def get_note_child_list(self, obj: Event) -> List[Any]:
+        return obj.get_note_child_list()
 
-    def get_citation_child_list(self, event: Event) -> List[Any]:
-        """Return the list of child secondary objects that may refer citations."""
-        return event.get_citation_child_list()
+    def get_referenced_handles(self, obj: Event) -> List[Tuple[str, str]]:
+        return obj.get_referenced_handles()
 
-    def get_description(self, event: Event) -> str:
-        """Return the description of the Event."""
-        return event.get_description()
+    @classmethod
+    def get_schema(cls) -> dict:
+        return Event.get_schema()
 
-    def get_handle_referents(self, event: Event) -> List[Any]:
-        """Return the list of child objects which may reference primary objects."""
-        return event.get_handle_referents()
+    def get_text_data_child_list(self, obj: Event) -> List[Any]:
+        return obj.get_text_data_child_list()
 
-    def get_note_child_list(self, event: Event) -> List[Any]:
-        """Return the list of child secondary objects that may refer notes."""
-        return event.get_note_child_list()
+    def get_text_data_list(self, obj: Event) -> List[Any]:
+        return obj.get_text_data_list()
 
-    def get_referenced_handles(self, event: Event) -> List[Tuple[str, str]]:
-        """Return the list of (classname, handle) tuples for all directly referenced primary objects."""
-        return event.get_referenced_handles()
+    def get_type(self, obj: Event) -> EventType:
+        return obj.get_type()
 
-    def get_text_data_child_list(self, event: Event) -> List[Any]:
-        """Return the list of child objects that may carry textual data."""
-        return event.get_text_data_child_list()
+    def is_empty(self, obj: Event) -> bool:
+        return obj.is_empty()
 
-    def get_text_data_list(self, event: Event) -> List[str]:
-        """Return the list of all textual attributes of the object."""
-        return event.get_text_data_list()
+    def merge(self, obj: Event, acquisition: Event) -> None:
+        obj.merge(acquisition)
 
-    def get_type(self, event: Event) -> Tuple[int, str]:
-        """Return the type of the Event."""
-        return event.get_type()
+    def serialize(self, obj: Event, no_text_date: bool = False) -> Tuple[Any, ...]:
+        return obj.serialize(no_text_date=no_text_date)
 
-    def is_empty(self, event: Event) -> bool:
-        """Return True if the Event is empty."""
-        return event.is_empty()
+    def set_description(self, obj: Event, description: str) -> None:
+        obj.set_description(description)
 
-    def merge(self, event: Event, acquisition: Event) -> None:
-        """Merge the content of acquisition into this event."""
-        event.merge(acquisition)
+    def set_type(self, obj: Event, the_type: Tuple[int, str]) -> None:
+        obj.set_type(the_type)
 
-    def serialize(self, event: Event, no_text_date: bool = False) -> Tuple[Any, ...]:
-        """Convert the data held in the Event to a Python tuple."""
-        return event.serialize(no_text_date)
+    def unserialize(self, obj: Event, data: Tuple[Any, ...]) -> None:
+        obj.unserialize(data)
 
-    def set_description(self, event: Event, description: str) -> None:
-        """Set the description of the Event."""
-        event.set_description(description)
+    def description(self, obj: Event) -> str:
+        try:
+            return obj.description
+        except AttributeError:
+            return obj.get_description()
 
-    def set_type(self, event: Event, the_type: Tuple[int, str]) -> None:
-        """Set the type of the Event."""
-        event.set_type(the_type)
+    def type(self, obj: Event) -> EventType:
+        try:
+            return obj.type
+        except AttributeError:
+            return obj.get_type()
 
-    def unserialize(self, event: Event, data: Tuple[Any, ...]) -> None:
-        """Convert the data held in a tuple back into the data in an Event object."""
-        event.unserialize(data)

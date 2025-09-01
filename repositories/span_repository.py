@@ -1,22 +1,43 @@
 from __future__ import annotations
+from typing import Any, Tuple
+from gramps.gen.lib.date import Span
+from repositories.repository_core import RepositoryCore
 
-from typing import Optional
+class SpanRepository(RepositoryCore):
+    ABOUT = 50
+    AFTER = 50
+    ALIVE = 110
+    BEFORE = 50
 
-from gramps.gen.lib import Span
+    def __init__(self, db=None, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-from repositories.base_repository import BaseRepository
+    def as_age(self, obj: Span) -> int:
+        return obj.as_age()
 
+    def as_time(self, obj: Span) -> int:
+        return obj.as_time()
 
-class SpanRepository(BaseRepository):
+    def format(self, obj: Span, precision: int = 2, as_age: bool = True, dlocale: Any = None) -> str:
+        return obj.format(precision=precision, as_age=as_age, dlocale=dlocale)
 
-    def get_start_date(self, span: Span) -> Optional[tuple[int, int, int]]:
-        return span.get_start_date()
+    def get_repr(self, obj: Span, as_age: bool = False, dlocale: Any = None) -> str:
+        return obj.get_repr(as_age=as_age, dlocale=dlocale)
 
-    def get_end_date(self, span: Span) -> Optional[tuple[int, int, int]]:
-        return span.get_end_date()
+    def is_valid(self, obj: Span) -> bool:
+        return obj.is_valid()
 
-    def get_years_months_days(self, span: Span) -> tuple[int, int, int]:
-        return span.get_years_months_days()
+    def tuple(self, obj: Span) -> Tuple[int, int, int]:
+        return obj.tuple()
 
-    def is_valid(self, span: Span) -> bool:
-        return span.is_valid()
+    def sort(self, obj: Span) -> Tuple[int, int]:
+        try:
+            return obj.sort
+        except AttributeError:
+            return (0, 0)
+
+    def minmax(self, obj: Span) -> Tuple[int, int]:
+        try:
+            return obj.minmax
+        except AttributeError:
+            return (0, 0)

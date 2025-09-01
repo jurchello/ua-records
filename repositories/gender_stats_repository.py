@@ -1,35 +1,34 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import Any
 
 from gramps.gen.lib import GenderStats
 
-from repositories.base_repository import BaseRepository
-
-if TYPE_CHECKING:
-    from gramps.gen.db.base import DbReadBase
+from repositories.repository_core import RepositoryCore
 
 
-class GenderStatsRepository(BaseRepository):
-    """Repository for GenderStats objects with all GenderStats-specific methods."""
+class GenderStatsRepository(RepositoryCore):
 
-    # GenderStats-specific methods from stub
-    def count_person(self, stats: GenderStats, person: Any, db: DbReadBase, date: Any | None = None) -> None:
-        """Count a person in the gender statistics."""
-        stats.count_person(person, db, date)
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
-    def get_female_count(self, stats: GenderStats) -> int:
-        """Return the count of females."""
-        return stats.get_female_count()
+    def clear_stats(self, obj: GenderStats) -> None:
+        obj.clear_stats()
 
-    def get_male_count(self, stats: GenderStats) -> int:
-        """Return the count of males."""
-        return stats.get_male_count()
+    def count_name(self, obj: GenderStats, name: str, gender: int) -> None:
+        obj.count_name(name, gender)
 
-    def get_stats(self, stats: GenderStats) -> Tuple[int, int, int]:
-        """Return the statistics as (male_count, female_count, unknown_count)."""
-        return stats.get_stats()
+    def count_person(self, obj: GenderStats, person: Any, undo: int = 0) -> None:
+        obj.count_person(person, undo=undo)
 
-    def get_unknown_count(self, stats: GenderStats) -> int:
-        """Return the count of unknown gender."""
-        return stats.get_unknown_count()
+    def guess_gender(self, obj: GenderStats, name: str) -> Any:
+        return obj.guess_gender(name)
+
+    def name_stats(self, obj: GenderStats, name: str) -> Any:
+        return obj.name_stats(name)
+
+    def save_stats(self, obj: GenderStats) -> None:
+        obj.save_stats()
+
+    def uncount_person(self, obj: GenderStats, person: Any) -> None:
+        obj.uncount_person(person)

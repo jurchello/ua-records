@@ -1,76 +1,44 @@
 from __future__ import annotations
-
-from typing import Any, Iterator, List, Optional, Tuple
-
-from gramps.gen.db.txn import DbTxn
+from typing import Any, List, Dict, Tuple
 from gramps.gen.lib import Tag
+from repositories.table_object_repository import TableObjectRepository
 
-from repositories.base_repository import BaseRepository
+class TagRepository(TableObjectRepository):
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
+    def are_equal(self, obj: Tag, other: Tag) -> bool:
+        return obj.are_equal(other)
 
-class TagRepository(BaseRepository):
-    """Repository for Tag objects with full CRUD operations and all Tag-specific methods."""
+    def get_color(self, obj: Tag) -> str:
+        return obj.get_color()
 
-    # CRUD Operations
-    def get_by_handle(self, handle: str) -> Optional[Tag]:
-        """Get Tag by handle from database."""
-        return self.db.get_tag_from_handle(handle)
+    def get_name(self, obj: Tag) -> str:
+        return obj.get_name()
 
-    def add(self, tag: Tag, description: str = "Add tag") -> str:
-        """Add new Tag to database."""
-        with DbTxn(description, self.db) as trans:
-            return self.db.add_tag(tag, trans)
+    def get_priority(self, obj: Tag) -> int:
+        return obj.get_priority()
 
-    def commit(self, tag: Tag, description: str = "Update tag") -> None:
-        """Commit Tag changes to database."""
-        with DbTxn(description, self.db) as trans:
-            self.db.commit_tag(tag, trans)
+    def get_schema(self) -> Dict[str, Any]:
+        return Tag.get_schema()
 
-    def iter_all(self) -> Iterator[Tag]:
-        """Iterate over all Tags in database."""
-        return self.db.iter_tags()
+    def get_text_data_list(self, obj: Tag) -> List[str]:
+        return obj.get_text_data_list()
 
-    # Tag-specific methods from stub
-    def are_equal(self, tag: Tag, other: Tag) -> bool:
-        """Compare two Tag objects for equality."""
-        return tag.are_equal(other)
+    def is_empty(self, obj: Tag) -> bool:
+        return obj.is_empty()
 
-    def get_color(self, tag: Tag) -> str:
-        """Return the color of the Tag."""
-        return tag.get_color()
+    def serialize(self, obj: Tag) -> Tuple[Any, ...]:
+        return obj.serialize()
 
-    def get_name(self, tag: Tag) -> str:
-        """Return the name of the Tag."""
-        return tag.get_name()
+    def set_color(self, obj: Tag, color: str) -> None:
+        obj.set_color(color)
 
-    def get_priority(self, tag: Tag) -> int:
-        """Return the priority of the Tag."""
-        return tag.get_priority()
+    def set_name(self, obj: Tag, name: str) -> None:
+        obj.set_name(name)
 
-    def get_text_data_list(self, tag: Tag) -> List[str]:
-        """Return the list of all textual attributes of the object."""
-        return tag.get_text_data_list()
+    def set_priority(self, obj: Tag, priority: int) -> None:
+        obj.set_priority(priority)
 
-    def is_empty(self, tag: Tag) -> bool:
-        """Return True if the Tag is empty."""
-        return tag.is_empty()
-
-    def serialize(self, tag: Tag) -> Tuple[Any, ...]:
-        """Convert the data held in the Tag to a Python tuple."""
-        return tag.serialize()
-
-    def set_color(self, tag: Tag, color: str) -> None:
-        """Set the color of the Tag."""
-        tag.set_color(color)
-
-    def set_name(self, tag: Tag, name: str) -> None:
-        """Set the name of the Tag."""
-        tag.set_name(name)
-
-    def set_priority(self, tag: Tag, priority: int) -> None:
-        """Set the priority of the Tag."""
-        tag.set_priority(priority)
-
-    def unserialize(self, tag: Tag, data: Tuple[Any, ...]) -> None:
-        """Convert the data held in a tuple back into the data in a Tag object."""
-        tag.unserialize(data)
+    def unserialize(self, obj: Tag, data: Tuple[Any, ...]) -> None:
+        obj.unserialize(data)

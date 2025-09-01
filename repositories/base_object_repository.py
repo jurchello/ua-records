@@ -4,10 +4,13 @@ from typing import Any, List, Tuple
 
 from gramps.gen.lib import BaseObject
 
-from repositories.base_repository import BaseRepository
+from repositories.repository_core import RepositoryCore
 
 
-class BaseObjectRepository(BaseRepository):
+class BaseObjectRepository(RepositoryCore):
+
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, *args, **kwargs)
 
     def get_handle_referents(self, obj: BaseObject) -> List[Any]:
         return obj.get_handle_referents()
@@ -21,7 +24,7 @@ class BaseObjectRepository(BaseRepository):
     def get_text_data_child_list(self, obj: BaseObject) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: BaseObject) -> List[str]:
+    def get_text_data_list(self, obj: BaseObject) -> List[str | None]:
         return obj.get_text_data_list()
 
     def matches_regexp(self, obj: BaseObject, pattern: str, case_sensitive: bool = False) -> bool:
@@ -29,3 +32,12 @@ class BaseObjectRepository(BaseRepository):
 
     def matches_string(self, obj: BaseObject, pattern: str, case_sensitive: bool = False) -> bool:
         return obj.matches_string(pattern, case_sensitive)
+
+    def merge(self, obj: BaseObject, acquisition: BaseObject) -> None:
+        obj.merge(acquisition)
+
+    def serialize(self, obj: BaseObject) -> Any:
+        return obj.serialize()
+
+    def unserialize(self, obj: BaseObject, data: Any) -> None:
+        obj.unserialize(data)
