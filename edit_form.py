@@ -32,4 +32,9 @@ class EditForm(BaseEditForm):
         return fac(self.dbstate.db) if fac else None
 
     def make_processor(self, work_context):
-        return self._provider["processor_factory"](work_context, self.dbstate, self.uistate)
+        if not self._provider:
+            raise RuntimeError(f"No provider found for form_id: {self.form_id}")
+        processor_class = self._provider.get("processor")
+        if not processor_class:
+            raise RuntimeError(f"No processor found for form_id: {self.form_id}")
+        return processor_class(work_context)

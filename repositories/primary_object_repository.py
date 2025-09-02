@@ -12,17 +12,17 @@ class PrimaryObjectRepository(BasicPrimaryObjectRepository):
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def has_handle_reference(self, obj: PrimaryObject, classname: str, handle: str) -> bool:
+    def has_handle_reference(self, obj, classname: str, handle: str) -> bool:
         return obj.has_handle_reference(classname, handle)
 
-    def remove_handle_references(self, obj: PrimaryObject, classname: str, handle_list: List[str]) -> None:
+    def remove_handle_references(self, obj, classname: str, handle_list: List[str]) -> None:
         obj.remove_handle_references(classname, handle_list)
 
-    def replace_handle_reference(self, obj: PrimaryObject, classname: str, old_handle: str, new_handle: str) -> None:
+    def replace_handle_reference(self, obj, classname: str, old_handle: str, new_handle: str) -> None:
         obj.replace_handle_reference(classname, old_handle, new_handle)
 
-    def serialize(self, obj: PrimaryObject) -> Union[Tuple[Any, ...], None]:
+    def serialize(self, obj) -> Union[Tuple[Any, ...], None]:
         return obj.serialize()
 
-    def unserialize(self, obj: PrimaryObject, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)

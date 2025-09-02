@@ -22,47 +22,47 @@ class EventRefRepository(
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_citation_child_list(self, obj: EventRef) -> List[Any]:
+    def get_citation_child_list(self, obj) -> List[Any]:
         return obj.get_citation_child_list()
 
-    def get_handle_referents(self, obj: EventRef) -> List[Any]:
+    def get_handle_referents(self, obj) -> List[Any]:
         return obj.get_handle_referents()
 
-    def get_note_child_list(self, obj: EventRef) -> List[Any]:
+    def get_note_child_list(self, obj) -> List[Any]:
         return obj.get_note_child_list()
 
-    def get_referenced_handles(self, obj: EventRef) -> List[Tuple[str, str]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, str]]:
         return obj.get_referenced_handles()
 
-    def get_role(self, obj: EventRef) -> Any:
+    def get_role(self, obj) -> Any:
         return obj.get_role()
 
     @classmethod
     def get_schema(cls) -> dict:
         return EventRef.get_schema()
 
-    def get_text_data_child_list(self, obj: EventRef) -> List[Any]:
+    def get_text_data_child_list(self, obj) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: EventRef) -> List[Any]:
+    def get_text_data_list(self, obj) -> List[Any]:
         return obj.get_text_data_list()
 
-    def is_equivalent(self, obj: EventRef, other: EventRef) -> int:
+    def is_equivalent(self, obj, other) -> int:
         return obj.is_equivalent(other)
 
-    def merge(self, obj: EventRef, acquisition: EventRef) -> None:
+    def merge(self, obj, acquisition) -> None:
         obj.merge(acquisition)
 
-    def serialize(self, obj: EventRef) -> Any:
+    def serialize(self, obj) -> Any:
         return obj.serialize()
 
-    def set_role(self, obj: EventRef, role: Any) -> None:
+    def set_role(self, obj, role: Any) -> None:
         obj.set_role(role)
 
-    def unserialize(self, obj: EventRef, data: Any) -> None:
+    def unserialize(self, obj, data: Any) -> None:
         obj.unserialize(data)
 
-    def role(self, obj: EventRef) -> Any:
+    def role(self, obj) -> Any:
         try:
             return obj.role
         except AttributeError:

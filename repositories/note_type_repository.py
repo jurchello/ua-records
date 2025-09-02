@@ -36,5 +36,5 @@ class NoteTypeRepository(GrampsTypeRepository):
     def __init__(self, db=None, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_ignore_list(self, obj: NoteType, exception: List[int]) -> List[int]:
+    def get_ignore_list(self, obj, exception: List[int]) -> List[int]:
         return obj.get_ignore_list(exception)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from gramps.gen.lib import Attribute, AttributeBase
+from gramps.gen.lib import Attribute
 
 from repositories.attribute_root_base_repository import AttributeRootBaseRepository
 

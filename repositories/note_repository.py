@@ -20,56 +20,56 @@ class NoteRepository(BasicPrimaryObjectRepository):
     def __init__(self, db=None, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def append(self, obj: Note, text: Any) -> None:
+    def append(self, obj, text: Any) -> None:
         obj.append(text)
 
-    def get(self, obj: Note) -> str:
+    def get(self, obj) -> str:
         return obj.get()
 
-    def get_format(self, obj: Note) -> int:
+    def get_format(self, obj) -> int:
         return obj.get_format()
 
-    def get_links(self, obj: Note) -> List[Tuple[str, str, str, str]]:
+    def get_links(self, obj) -> List[Tuple[str, str, str, str]]:
         return obj.get_links()
 
-    def get_referenced_handles(self, obj: Note) -> List[Tuple[str, str]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, str]]:
         return obj.get_referenced_handles()
 
     @classmethod
     def get_schema(cls) -> dict:
         return Note.get_schema()
 
-    def get_styledtext(self, obj: Note) -> Any:
+    def get_styledtext(self, obj) -> Any:
         return obj.get_styledtext()
 
-    def get_text_data_list(self, obj: Note) -> List[Any]:
+    def get_text_data_list(self, obj) -> List[Any]:
         return obj.get_text_data_list()
 
-    def get_type(self, obj: Note) -> NoteType:
+    def get_type(self, obj) -> NoteType:
         return obj.get_type()
     
-    def merge(self, obj: Note, acquisition: Note) -> None:
+    def merge(self, obj, acquisition) -> None:
         obj.merge(acquisition)
 
-    def serialize(self, obj: Note) -> Tuple[Any, ...]:
+    def serialize(self, obj) -> Tuple[Any, ...]:
         return obj.serialize()
 
-    def set(self, obj: Note, text: str) -> None:
+    def set(self, obj, text: str) -> None:
         obj.set(text)
 
-    def set_format(self, obj: Note, format: int) -> None:
+    def set_format(self, obj, format: int) -> None:
         obj.set_format(format)
 
-    def set_styledtext(self, obj: Note, text: Any) -> None:
+    def set_styledtext(self, obj, text: Any) -> None:
         obj.set_styledtext(text)
 
-    def set_type(self, obj: Note, the_type: str) -> None:
+    def set_type(self, obj, the_type: str) -> None:
         obj.set_type(the_type)
 
-    def unserialize(self, obj: Note, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)
         
-    def text(self, obj: Note) -> Union[str, StyledText]:
+    def text(self, obj) -> Union[str, StyledText]:
         try:
             return obj.text
         except AttributeError:

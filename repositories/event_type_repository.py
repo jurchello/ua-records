@@ -54,41 +54,41 @@ class EventTypeRepository(GrampsTypeRepository):
     def __init__(self, db=None, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_abbreviation(self, obj: EventType, trans_text: Callable[[str], str] | None = None) -> str:
+    def get_abbreviation(self, obj, trans_text: Callable[[str], str] | None = None) -> str:
         return obj.get_abbreviation(trans_text=trans_text)
 
-    def is_baptism(self, obj: EventType) -> bool:
+    def is_baptism(self, obj) -> bool:
         return obj.is_baptism()
 
-    def is_birth(self, obj: EventType) -> bool:
+    def is_birth(self, obj) -> bool:
         return obj.is_birth()
 
-    def is_birth_fallback(self, obj: EventType) -> bool:
+    def is_birth_fallback(self, obj) -> bool:
         return obj.is_birth_fallback()
 
-    def is_burial(self, obj: EventType) -> bool:
+    def is_burial(self, obj) -> bool:
         return obj.is_burial()
 
-    def is_death(self, obj: EventType) -> bool:
+    def is_death(self, obj) -> bool:
         return obj.is_death()
 
-    def is_death_fallback(self, obj: EventType) -> bool:
+    def is_death_fallback(self, obj) -> bool:
         return obj.is_death_fallback()
 
-    def is_divorce(self, obj: EventType) -> bool:
+    def is_divorce(self, obj) -> bool:
         return obj.is_divorce()
 
-    def is_divorce_fallback(self, obj: EventType) -> bool:
+    def is_divorce_fallback(self, obj) -> bool:
         return obj.is_divorce_fallback()
 
-    def is_marriage(self, obj: EventType) -> bool:
+    def is_marriage(self, obj) -> bool:
         return obj.is_marriage()
 
-    def is_marriage_fallback(self, obj: EventType) -> bool:
+    def is_marriage_fallback(self, obj) -> bool:
         return obj.is_marriage_fallback()
 
-    def is_relationship_event(self, obj: EventType) -> bool:
+    def is_relationship_event(self, obj) -> bool:
         return obj.is_relationship_event()
 
-    def is_type(self, obj: EventType, event_name: str) -> bool:
+    def is_type(self, obj, event_name: str) -> bool:
         return obj.is_type(event_name)

@@ -247,7 +247,7 @@ EXISTING_PERSON_TAGS = ["Bilovody (research direction)", "Allow To Publish"]
 NEW_EVENT_TAGS = ["Allow To Publish"]
 NEW_CITATION_TAGS = ["Allow To Publish"]
 
-CLERGY_OCCUPATIONS = ["Священник", "Диякон", "Ієрей"]
+CLERGY_OCCUPATIONS = ["Священник", "Диякон", "Дячок", "Ієрей"]
 
 DENSITY_SETTINGS = {
     "compact": {

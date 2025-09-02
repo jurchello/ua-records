@@ -26,47 +26,47 @@ class CitationRepository(
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_citation_child_list(self, obj: Citation) -> List[Any]:
+    def get_citation_child_list(self, obj) -> List[Any]:
         return obj.get_citation_child_list()
 
-    def get_confidence_level(self, obj: Citation) -> int:
+    def get_confidence_level(self, obj) -> int:
         return obj.get_confidence_level()
 
-    def set_confidence_level(self, obj: Citation, val: int) -> None:
+    def set_confidence_level(self, obj, val: int) -> None:
         obj.set_confidence_level(val)
 
-    def get_handle_referents(self, obj: Citation) -> List[Any]:
+    def get_handle_referents(self, obj) -> List[Any]:
         return obj.get_handle_referents()
 
-    def get_note_child_list(self, obj: Citation) -> List[Any]:
+    def get_note_child_list(self, obj) -> List[Any]:
         return obj.get_note_child_list()
 
-    def get_page(self, obj: Citation) -> str:
+    def get_page(self, obj) -> str:
         return obj.get_page()
 
-    def set_page(self, obj: Citation, page: str) -> None:
+    def set_page(self, obj, page: str) -> None:
         obj.set_page(page)
 
-    def get_reference_handle(self, obj: Citation) -> Optional[str]:
+    def get_reference_handle(self, obj) -> Optional[str]:
         return obj.get_reference_handle()
 
-    def set_reference_handle(self, obj: Citation, val: str) -> None:
+    def set_reference_handle(self, obj, val: str) -> None:
         obj.set_reference_handle(val)
 
-    def get_referenced_handles(self, obj: Citation) -> List[Tuple[str, str]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, str]]:
         return obj.get_referenced_handles()
 
-    def get_text_data_child_list(self, obj: Citation) -> List[Any]:
+    def get_text_data_child_list(self, obj) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: Citation) -> List[str]:
+    def get_text_data_list(self, obj) -> List[str]:
         return obj.get_text_data_list()
 
-    def merge(self, obj: Citation, acquisition: Citation) -> None:
+    def merge(self, obj, acquisition) -> None:
         obj.merge(acquisition)
 
-    def serialize(self, obj: Citation, no_text_date: bool = False) -> Tuple[Any, ...]:
+    def serialize(self, obj, no_text_date: bool = False) -> Tuple[Any, ...]:
         return obj.serialize(no_text_date=no_text_date)
 
-    def unserialize(self, obj: Citation, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)

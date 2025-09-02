@@ -13,32 +13,32 @@ class PlaceRefRepository(
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_citation_child_list(self, obj: PlaceRef) -> List[Any]:
+    def get_citation_child_list(self, obj) -> List[Any]:
         return obj.get_citation_child_list()
 
-    def get_handle_referents(self, obj: PlaceRef) -> List[Any]:
+    def get_handle_referents(self, obj) -> List[Any]:
         return obj.get_handle_referents()
 
-    def get_note_child_list(self, obj: PlaceRef) -> List[Any]:
+    def get_note_child_list(self, obj) -> List[Any]:
         return obj.get_note_child_list()
 
-    def get_referenced_handles(self, obj: PlaceRef) -> List[Tuple[str, Optional[str]]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, Optional[str]]]:
         return obj.get_referenced_handles()
 
     def get_schema(self) -> Dict[str, Any]:
         return PlaceRef.get_schema()
 
-    def get_text_data_child_list(self, obj: PlaceRef) -> List[Any]:
+    def get_text_data_child_list(self, obj) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: PlaceRef) -> List[str]:
+    def get_text_data_list(self, obj) -> List[str]:
         return obj.get_text_data_list()
 
-    def is_equivalent(self, obj: PlaceRef, other: PlaceRef) -> int:
+    def is_equivalent(self, obj, other) -> int:
         return obj.is_equivalent(other)
 
-    def serialize(self, obj: PlaceRef) -> Tuple[Any, ...]:
+    def serialize(self, obj) -> Tuple[Any, ...]:
         return obj.serialize()
 
-    def unserialize(self, obj: PlaceRef, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)

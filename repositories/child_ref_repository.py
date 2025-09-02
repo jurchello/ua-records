@@ -23,43 +23,43 @@ class ChildRefRepository(
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def get_father_relation(self, obj: ChildRef) -> Any:
+    def get_father_relation(self, obj) -> Any:
         return obj.get_father_relation()
 
-    def get_mother_relation(self, obj: ChildRef) -> Any:
+    def get_mother_relation(self, obj) -> Any:
         return obj.get_mother_relation()
 
-    def set_father_relation(self, obj: ChildRef, frel: Any) -> None:
+    def set_father_relation(self, obj, frel: Any) -> None:
         obj.set_father_relation(frel)
 
-    def set_mother_relation(self, obj: ChildRef, rel: Any) -> None:
+    def set_mother_relation(self, obj, rel: Any) -> None:
         obj.set_mother_relation(rel)
 
-    def get_handle_referents(self, obj: ChildRef) -> List[Any]:
+    def get_handle_referents(self, obj) -> List[Any]:
         return obj.get_handle_referents()
 
-    def get_note_child_list(self, obj: ChildRef) -> List[Any]:
+    def get_note_child_list(self, obj) -> List[Any]:
         return obj.get_note_child_list()
 
-    def get_referenced_handles(self, obj: ChildRef) -> List[Tuple[str, str]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, str]]:
         return obj.get_referenced_handles()
 
-    def get_text_data_child_list(self, obj: ChildRef) -> List[Any]:
+    def get_text_data_child_list(self, obj) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: ChildRef) -> List[Any]:
+    def get_text_data_list(self, obj) -> List[Any]:
         return obj.get_text_data_list()
 
-    def is_equivalent(self, obj: ChildRef, other: ChildRef) -> int:
+    def is_equivalent(self, obj, other) -> int:
         return obj.is_equivalent(other)
 
-    def merge(self, obj: ChildRef, acquisition: ChildRef) -> None:
+    def merge(self, obj, acquisition) -> None:
         obj.merge(acquisition)
 
-    def serialize(self, obj: ChildRef) -> Tuple[Any, ...]:
+    def serialize(self, obj) -> Tuple[Any, ...]:
         return obj.serialize()
 
-    def unserialize(self, obj: ChildRef, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)
 
     def get_schema(self) -> Dict[str, Any]:

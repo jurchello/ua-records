@@ -12,31 +12,31 @@ class SpanRepository(RepositoryCore):
     def __init__(self, db=None, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def as_age(self, obj: Span) -> int:
+    def as_age(self, obj) -> int:
         return obj.as_age()
 
-    def as_time(self, obj: Span) -> int:
+    def as_time(self, obj) -> int:
         return obj.as_time()
 
-    def format(self, obj: Span, precision: int = 2, as_age: bool = True, dlocale: Any = None) -> str:
+    def format(self, obj, precision: int = 2, as_age: bool = True, dlocale: Any = None) -> str:
         return obj.format(precision=precision, as_age=as_age, dlocale=dlocale)
 
-    def get_repr(self, obj: Span, as_age: bool = False, dlocale: Any = None) -> str:
+    def get_repr(self, obj, as_age: bool = False, dlocale: Any = None) -> str:
         return obj.get_repr(as_age=as_age, dlocale=dlocale)
 
-    def is_valid(self, obj: Span) -> bool:
+    def is_valid(self, obj) -> bool:
         return obj.is_valid()
 
-    def tuple(self, obj: Span) -> Tuple[int, int, int]:
+    def tuple(self, obj) -> Tuple[int, int, int]:
         return obj.tuple()
 
-    def sort(self, obj: Span) -> Tuple[int, int]:
+    def sort(self, obj) -> Tuple[int, int]:
         try:
             return obj.sort
         except AttributeError:
             return (0, 0)
 
-    def minmax(self, obj: Span) -> Tuple[int, int]:
+    def minmax(self, obj) -> Tuple[int, int]:
         try:
             return obj.minmax
         except AttributeError:

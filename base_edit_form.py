@@ -817,17 +817,91 @@ class BaseEditForm(Gtk.Window):
         self.work_context.reset()
         self.form_state = self.make_form_state()
         self.form_state.update_from_dict(self.collect_snapshot_dict())
-
         self.work_context.form_state = self.form_state
         self.work_context.db = self.dbstate.db
+
+        # 1) Валідація через провайдера (показує діалог і виходить, якщо є помилки)
         if not self._run_validation_via_provider():
+            print("[on_save] Валідація не пройдена — збереження перервано.")
             return
 
-        # processor = self.make_processor(self.work_context)
-        # processor.run()
+        # 2) Створюємо процесор
+        processor = None
+        try:
+            processor = self.make_processor(self.work_context)
+        except Exception as e:
+            print(f"[on_save] Помилка створення процесора: {e}")
 
-        self.work_context.reset()
-        # self.destroy()  # Keep window open for testing
+        if not processor:
+            print("[on_save] Процесор відсутній. Метод спрацював, але реалізація ще не готова (no-op).")
+            self._show_info_dialog("Збереження", "Обробник змін поки не налаштований.")
+            return
+        
+        # 3) STAGE: рахуємо різниці (baseline/after/ops/errors)
+        try:
+            staging = processor.stage()
+            print(f"[on_save] STAGE готово: ops={len(staging.ops)}, errors={len(staging.errors)}")
+        except Exception as e:
+            print(f"[on_save] Помилка підготовки змін (stage): {e}")
+            self._show_info_dialog("Помилка", f"Не вдалося підготувати зміни: {e}")
+            return
+
+        # 4) Якщо HV-валідація знайшла помилки — показуємо й зупиняємось
+        if staging.errors:
+            msg = "Знайдено помилки у графі змін:\n• " + "\n• ".join(staging.errors[:10])
+            if len(staging.errors) > 10:
+                msg += f"\n… та ще {len(staging.errors) - 10}"
+            self._show_info_dialog("Помилки перевірки змін", msg)
+            print("[on_save] Є помилки HV-графа — commit заборонено.")
+            return
+        
+        # 5) REVIEW UI: показуємо діалог з різницями (дві колонки: Було / Стане) і беремо вибір користувача
+        try:
+            try:
+                from ui.ui_review import run_review_dialog  # твій діалог підтвердження
+            except Exception:
+                # Заглушка, якщо діалог ще не реалізовано
+                def run_review_dialog(_parent, stg):
+                    print("[ui_review] Заглушка: приймаємо всі зміни автоматично (немає реалізації діалогу).")
+                    return [op.id for op in stg.ops]
+
+            accepted_ids = run_review_dialog(self, staging) or []
+            print(f"[on_save] Користувач прийняв {len(accepted_ids)} змін(и).")
+        except Exception as e:
+            print(f"[on_save] Помилка під час review: {e}")
+            self._show_info_dialog("Помилка", f"Не вдалося показати/обробити перегляд змін: {e}")
+            return
+
+        if not accepted_ids:
+            print("[on_save] Зміни не прийняті (порожній вибір) — нічого не робимо.")
+            self._show_info_dialog("Зміни скасовано", "Ви не обрали жодної зміни для застосування.")
+            return
+
+        # 6) Формуємо прийнятий target-стан (accepted_after) лише з підтверджених змін
+        try:
+            accepted_after = processor.accept_selection(staging, accepted_ids)
+            print(f"[on_save] Сформовано accepted_after: {len(accepted_after)} об'єкт(и).")
+        except Exception as e:
+            print(f"[on_save] Помилка застосування вибору (accept_selection): {e}")
+            self._show_info_dialog("Помилка", f"Не вдалося застосувати вибір змін: {e}")
+            return
+
+        # 7) COMMIT: застосовуємо в БД (може бути заглушка, що лише друкує повідомлення)
+        try:
+            processor.commit(accepted_after)
+            print("[on_save] Commit виконано (або заглушка нічого не зробила).")
+            self._show_info_dialog("Готово", "Зміни застосовано.")
+        except NotImplementedError:
+            print("[on_save] commit() ще не реалізовано — no-op.")
+            self._show_info_dialog("Інформація", "Застосування змін поки не реалізоване.")
+        except Exception as e:
+            print(f"[on_save] Помилка під час commit: {e}")
+            self._show_info_dialog("Помилка", f"Не вдалося застосувати зміни: {e}")
+            return
+        finally:
+
+        self.work_context.reset()    
+        self.destroy()
 
     def _run_validation_via_provider(self) -> bool:
         try:

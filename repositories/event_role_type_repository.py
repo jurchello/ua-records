@@ -22,9 +22,9 @@ class EventRoleTypeRepository(GrampsTypeRepository):
     def __init__(self, db=None, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def is_family(self, obj: EventRoleType) -> bool:
+    def is_family(self, obj) -> bool:
         return obj.is_family()
 
-    def is_primary(self, obj: EventRoleType) -> bool:
+    def is_primary(self, obj) -> bool:
         return obj.is_primary()
 

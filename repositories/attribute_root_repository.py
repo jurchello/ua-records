@@ -41,10 +41,10 @@ class AttributeRootRepository(
     def set_value(self, attr: AttributeRoot, val: str) -> None:
         attr.set_value(val)
 
-    def is_equivalent(self, attr: AttributeRoot, other: AttributeRoot) -> int:
+    def is_equivalent(self, attr: AttributeRoot, other) -> int:
         return attr.is_equivalent(other)
 
-    def merge(self, attr: AttributeRoot, acquisition: AttributeRoot) -> None:
+    def merge(self, attr: AttributeRoot, acquisition) -> None:
         attr.merge(acquisition)
 
     def serialize(self, attr: AttributeRoot) -> Sequence[Any]:

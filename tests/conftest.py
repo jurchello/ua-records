@@ -136,19 +136,6 @@ def db() -> Any:
 
 
 @pytest.fixture(autouse=True)
-def patch_dbtxn(monkeypatch: pytest.MonkeyPatch) -> None:
-    import repositories.citation_repository as m5
-    import repositories.event_repository as m2
-    import repositories.family_repository as m3
-    import repositories.person_repository as m1
-    import repositories.place_repository as m6
-    import repositories.tag_repository as m4
-
-    for mod in (m1, m2, m3, m4, m5, m6):
-        monkeypatch.setattr(mod, "DbTxn", NoopDbTxn, raising=True)
-
-
-@pytest.fixture(autouse=True)
 def stub_gramps_lib():
     """Підміняємо gramps.gen.lib простими класами з потрібними методами."""
     lib = types.SimpleNamespace()

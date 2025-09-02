@@ -26,62 +26,62 @@ class EventRepository(
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, *args, **kwargs)
 
-    def are_equal(self, obj: Event, other: Event) -> bool:
+    def are_equal(self, obj, other) -> bool:
         return obj.are_equal(other)
 
-    def get_citation_child_list(self, obj: Event) -> List[Any]:
+    def get_citation_child_list(self, obj) -> List[Any]:
         return obj.get_citation_child_list()
 
-    def get_description(self, obj: Event) -> str:
+    def get_description(self, obj) -> str:
         return obj.get_description()
 
-    def get_handle_referents(self, obj: Event) -> List[Any]:
+    def get_handle_referents(self, obj) -> List[Any]:
         return obj.get_handle_referents()
 
-    def get_note_child_list(self, obj: Event) -> List[Any]:
+    def get_note_child_list(self, obj) -> List[Any]:
         return obj.get_note_child_list()
 
-    def get_referenced_handles(self, obj: Event) -> List[Tuple[str, str]]:
+    def get_referenced_handles(self, obj) -> List[Tuple[str, str]]:
         return obj.get_referenced_handles()
 
     @classmethod
     def get_schema(cls) -> dict:
         return Event.get_schema()
 
-    def get_text_data_child_list(self, obj: Event) -> List[Any]:
+    def get_text_data_child_list(self, obj) -> List[Any]:
         return obj.get_text_data_child_list()
 
-    def get_text_data_list(self, obj: Event) -> List[Any]:
+    def get_text_data_list(self, obj) -> List[Any]:
         return obj.get_text_data_list()
 
-    def get_type(self, obj: Event) -> EventType:
+    def get_type(self, obj) -> EventType:
         return obj.get_type()
 
-    def is_empty(self, obj: Event) -> bool:
+    def is_empty(self, obj) -> bool:
         return obj.is_empty()
 
-    def merge(self, obj: Event, acquisition: Event) -> None:
+    def merge(self, obj, acquisition) -> None:
         obj.merge(acquisition)
 
-    def serialize(self, obj: Event, no_text_date: bool = False) -> Tuple[Any, ...]:
+    def serialize(self, obj, no_text_date: bool = False) -> Tuple[Any, ...]:
         return obj.serialize(no_text_date=no_text_date)
 
-    def set_description(self, obj: Event, description: str) -> None:
+    def set_description(self, obj, description: str) -> None:
         obj.set_description(description)
 
-    def set_type(self, obj: Event, the_type: Tuple[int, str]) -> None:
+    def set_type(self, obj, the_type: Tuple[int, str]) -> None:
         obj.set_type(the_type)
 
-    def unserialize(self, obj: Event, data: Tuple[Any, ...]) -> None:
+    def unserialize(self, obj, data: Tuple[Any, ...]) -> None:
         obj.unserialize(data)
 
-    def description(self, obj: Event) -> str:
+    def description(self, obj) -> str:
         try:
             return obj.description
         except AttributeError:
             return obj.get_description()
 
-    def type(self, obj: Event) -> EventType:
+    def type(self, obj) -> EventType:
         try:
             return obj.type
         except AttributeError:

@@ -23,7 +23,7 @@ class AttributeRepository(
     def get_schema(self) -> Dict[str, Any]:
         return Attribute.get_schema()
 
-    def merge(self, attribute: Attribute, acquisition: Attribute) -> None:
+    def merge(self, attribute: Attribute, acquisition) -> None:
         attribute.merge(acquisition)
 
     def serialize(self, attribute: Attribute) -> Sequence[Any]:
